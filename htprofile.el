@@ -3,11 +3,14 @@
   "save data to this variable")
 (defvar htprofile--advice-list ()
   "list of advice functions")
+(defvar htprofile-func-name-format
+  "%S"
+  "string which is used to format func-name")
 
 ;;; timer
 (defun htprofile-advice:timer-event-handler (orig-func &rest args)
   (let* ((timer (car args))
-         (func-name (timer--function timer))
+         (func (timer--function timer))
          (type (if (timer--idle-delay timer)
                    'idle-timer
                  'timer))
@@ -16,7 +19,8 @@
                                           (timer--low-seconds timer)
                                           (timer--usecs timer)))
                       nil)))
-    (htprofile-profile-func orig-func args type (format "%s" func-name)
+    (htprofile-profile-func orig-func args type (format htprofile-func-name-format
+                                                        func)
                             :idle-time idle-time)))
 (defun htprofile-profile-timer ()
   (let ((symb 'timer-event-handler)
@@ -51,9 +55,10 @@
   "func-name must be a string"
   type func-name elapsed-time idle-time count current-time)
 (cl-defun make-htprofile-data (&key type func-name elapsed-time idle-time)
-  (let ((func-name-str (if (symbolp func-name)
-                            (symbol-name func-name)
-                         (format "%s" func-name))))
+  (let ((func-name-str (if (stringp func-name)
+                           func-name
+                         (format htprofile-func-name-format
+                                 func-name))))
     (setq htprofile--data-count (1+ htprofile--data-count))
     (make-htprofile-data--internal :type type
                                    :func-name func-name-str
@@ -199,7 +204,7 @@ The value should be one of the following:
             (htprofile-float-to-str (htprofile-stat-total-time stat))
             (htprofile-float-to-str (htprofile-stat-max-time stat))
             (htprofile-float-to-str (htprofile-stat-average-time stat))
-            (htprofile-maybe-remove-newline (format "%s" (htprofile-stat-func stat))))))
+            (htprofile-maybe-remove-newline (htprofile-stat-func stat)))))
 (defun htprofile-get-stat-header ()
   "get header"
   (let* ((description (concat (format "total-time, max-time, average-time are shown as: %s\n"
