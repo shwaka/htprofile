@@ -76,8 +76,18 @@
                                   (htprofile-data-idle-time data))
           (htprofile-float-to-str (float-time (htprofile-data-elapsed-time data)))
           (htprofile-maybe-remove-newline (htprofile-data-func-name data))))
-(defun htprofile-get-data-header ()
-  "get header"
+(defun htprofile-insert-data-header ()
+  "insert header"
+  (let ((text "update")
+        (beg (point))
+        end)
+    (insert text)
+    (setq end (point))
+    (make-button beg end
+                 'action (lambda (button)
+                           (htprofile-update-log)))
+    (insert "\n")
+    (insert (format "total: %s\n" (htprofile-data-list-length))))
   (let* ((description (format "elapsed time is shown as: %s\n"
                               (htprofile-get-float-format-description)))
          (header-plain (format "%s %s  %s %s %s\n"
@@ -88,7 +98,7 @@
                                "func"))
          (header (propertize header-plain
                              'face '(:inverse-video t))))
-    (format "%s\n%s" description header)))
+    (insert (format "%s\n%s" description header))))
 
 (cl-defstruct htprofile-key
   type func-name idle-time)
@@ -121,6 +131,8 @@
     (cl-subseq htprofile-data-list
                (- len end)
                (- len beg))))
+(defun htprofile-data-list-length ()
+  (length htprofile-data-list))
 
 
 ;;; compute statistics
@@ -301,15 +313,16 @@ The value should be one of the following:
 (defvar htprofile-log-buffer "*htprofile-log*")
 (defun htprofile-update-log ()
   (with-current-buffer (htprofile-get-clean-buffer htprofile-log-buffer)
-    (let ((inhibit-read-only t))
-      (insert (htprofile-get-data-header))
-      (dolist (data (htprofile-get-data-list (- htprofile--current-log-length htprofile-max-log)
-                                             htprofile--current-log-length))
-        (insert (format "%s\n" (htprofile-data-to-str data)))))))
+    (save-excursion
+      (let ((inhibit-read-only t))
+        (htprofile-insert-data-header)
+        (dolist (data (htprofile-get-data-list (- htprofile--current-log-length htprofile-max-log)
+                                               htprofile--current-log-length))
+          (insert (format "%s\n" (htprofile-data-to-str data))))))))
 (defun htprofile-show-log ()
   "show data in a buffer *htprofile-log*"
   (interactive)
-  (setq htprofile--current-log-length (length (htprofile-get-data-list)))
+  (setq htprofile--current-log-length (htprofile-data-list-length))
   (htprofile-update-log)
   (with-current-buffer (get-buffer htprofile-log-buffer)
     (goto-char (point-min))
