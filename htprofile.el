@@ -50,7 +50,7 @@
 (defun htprofile-maybe-remove-newline (str)
   (when htprofile-remove-newline
     (replace-regexp-in-string "\n" " " str)))
-(defvar htprofile--data-id 0)
+(defvar htprofile--data-id -1)
 (cl-defstruct (htprofile-data (:constructor make-htprofile-data--internal))
   "func-name must be a string"
   type func-name elapsed-time idle-time id current-time)
