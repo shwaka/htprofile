@@ -260,7 +260,7 @@ The value should be one of the following:
   (when (called-interactively-p 'interactive)
     (message "htprofile stopped. Use htprofile-start to restart again.")))
 
-(defun htprofile-get-buffer-create (buffer-name)
+(defun htprofile-get-clean-buffer (buffer-name)
   (let ((inhibit-read-only t))
     (if (get-buffer buffer-name)
         (with-current-buffer (get-buffer buffer-name)
@@ -271,10 +271,11 @@ The value should be one of the following:
               buffer-read-only t)
         (current-buffer)))))
 (defvar htprofile-sort-by 'max-time)
+(defvar htprofile-statistics-buffer "*htprofile-stat*")
 (defun htprofile-show-statistics ()
   "show data in a buffer *htprofile-stat*"
   (interactive)
-  (with-current-buffer (htprofile-get-buffer-create "*htprofile-stat*")
+  (with-current-buffer (htprofile-get-clean-buffer htprofile-statistics-buffer)
       (let (stat-list
             (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
         (dolist (data-list-with-key (htprofile-split-data-list-by-keys))
@@ -292,14 +293,19 @@ The value should be one of the following:
 (defvar htprofile-max-log
   1000
   "The number of data which are shown by `htprofile-show-log'")
-(defun htprofile-show-log ()
-  "show data in a buffer *htprofile-log*"
-  (interactive)
-  (with-current-buffer (htprofile-get-buffer-create "*htprofile-log*")
+(defvar htprofile-current-log-id)
+(defvar htprofile-log-buffer "*htprofile-log*")
+(defun htprofile-update-log ()
+  (with-current-buffer (htprofile-get-clean-buffer htprofile-log-buffer)
     (let ((inhibit-read-only t))
       (insert (htprofile-get-data-header))
       (dolist (data (htprofile-get-data-list 0 htprofile-max-log))
-        (insert (format "%s\n" (htprofile-data-to-str data)))))
+        (insert (format "%s\n" (htprofile-data-to-str data)))))))
+(defun htprofile-show-log ()
+  "show data in a buffer *htprofile-log*"
+  (interactive)
+  (htprofile-update-log)
+  (with-current-buffer (get-buffer htprofile-log-buffer)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
 
