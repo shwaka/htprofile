@@ -309,20 +309,23 @@ The value should be one of the following:
 (defvar htprofile-max-log
   1000
   "The number of data which are shown by `htprofile-show-log'")
-(defvar htprofile--current-log-length)
+(defvar htprofile--show-log-from)
+(defvar htprofile--show-log-to)
 (defvar htprofile-log-buffer "*htprofile-log*")
 (defun htprofile-update-log ()
   (with-current-buffer (htprofile-get-clean-buffer htprofile-log-buffer)
     (save-excursion
       (let ((inhibit-read-only t))
         (htprofile-insert-data-header)
-        (dolist (data (htprofile-get-data-list (- htprofile--current-log-length htprofile-max-log)
-                                               htprofile--current-log-length))
+        (dolist (data (htprofile-get-data-list htprofile--show-log-from
+                                               htprofile--show-log-to))
           (insert (format "%s\n" (htprofile-data-to-str data))))))))
 (defun htprofile-show-log ()
   "show data in a buffer *htprofile-log*"
   (interactive)
-  (setq htprofile--current-log-length (htprofile-data-list-length))
+  (let ((len (htprofile-data-list-length)))
+    (setq htprofile--show-log-from (- len htprofile-max-log)
+         htprofile--show-log-to len))
   (htprofile-update-log)
   (with-current-buffer (get-buffer htprofile-log-buffer)
     (goto-char (point-min))
