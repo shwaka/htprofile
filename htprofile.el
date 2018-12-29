@@ -105,6 +105,17 @@
                                :idle-time idle-time)
           htprofile-data-list)))
 
+;;; get data
+(defun htprofile-get-data-list (&optional beg end)
+  (unless beg
+    (setq beg 0))
+  (unless end
+    (setq end (length htprofile-data-list)))
+  (cl-subseq htprofile-data-list
+             beg
+             (min end
+                  (length htprofile-data-list))))
+
 
 ;;; compute statistics
 (cl-defstruct htprofile-stat
@@ -112,7 +123,7 @@
   total-time max-time average-time)
 (defun htprofile-split-data-list-by-keys ()
   (let (data-list-alist)
-    (dolist (data htprofile-data-list)
+    (dolist (data (htprofile-get-data-list))
       (let ((key (htprofile-data-to-key data)))
         (if (assoc key data-list-alist)
             (push data (cdr (assoc key data-list-alist)))
@@ -283,10 +294,7 @@ The value should be one of the following:
   (with-current-buffer (htprofile-get-buffer-create "*htprofile-log*")
     (let ((inhibit-read-only t))
       (insert (htprofile-get-data-header))
-      (dolist (data (cl-subseq htprofile-data-list
-                               0
-                               (min htprofile-max-log
-                                    (length htprofile-data-list))))
+      (dolist (data (htprofile-get-data-list 0 htprofile-max-log))
         (insert (format "%s\n" (htprofile-data-to-str data)))))
     (goto-char (point-min))
     (display-buffer (current-buffer))))
