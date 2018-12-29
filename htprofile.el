@@ -111,14 +111,16 @@
 
 ;;; get data
 (defun htprofile-get-data-list (&optional beg end)
-  (unless beg
-    (setq beg 0))
-  (unless end
-    (setq end (length htprofile-data-list)))
-  (cl-subseq htprofile-data-list
-             beg
-             (min end
-                  (length htprofile-data-list))))
+  (let ((len (length htprofile-data-list)))
+    (if beg
+        (setq beg (max beg 0))
+      (setq beg 0))
+    (if end
+        (setq end (min end len))
+      (setq end len))
+    (cl-subseq htprofile-data-list
+               (- len end)
+               (- len beg))))
 
 
 ;;; compute statistics
@@ -295,17 +297,19 @@ The value should be one of the following:
 (defvar htprofile-max-log
   1000
   "The number of data which are shown by `htprofile-show-log'")
-(defvar htprofile-current-log-id)
+(defvar htprofile--current-log-length)
 (defvar htprofile-log-buffer "*htprofile-log*")
 (defun htprofile-update-log ()
   (with-current-buffer (htprofile-get-clean-buffer htprofile-log-buffer)
     (let ((inhibit-read-only t))
       (insert (htprofile-get-data-header))
-      (dolist (data (htprofile-get-data-list 0 htprofile-max-log))
+      (dolist (data (htprofile-get-data-list (- htprofile--current-log-length htprofile-max-log)
+                                             htprofile--current-log-length))
         (insert (format "%s\n" (htprofile-data-to-str data)))))))
 (defun htprofile-show-log ()
   "show data in a buffer *htprofile-log*"
   (interactive)
+  (setq htprofile--current-log-length (length (htprofile-get-data-list)))
   (htprofile-update-log)
   (with-current-buffer (get-buffer htprofile-log-buffer)
     (goto-char (point-min))
