@@ -120,4 +120,4 @@
                  'htpwidget-variable-list variable-list)))
 
 
-(provide 'htprofile-widget)
+(provide 'htprofile-widgets)

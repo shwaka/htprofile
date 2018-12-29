@@ -1,4 +1,6 @@
 (require 'cl-lib)
+(require 'htprofile-widgets)
+
 (defvar htprofile-data-list ()
   "save data to this variable")
 (defvar htprofile--advice-list ()
@@ -86,8 +88,19 @@
     (make-button beg end
                  'action (lambda (button)
                            (htprofile-update-log)))
-    (insert "\n")
-    (insert (format "total: %s\n" (htprofile-data-list-length))))
+    (insert "\n"))
+  (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
+                                           :type 'integer))
+        (to-var (make-htpwidget-variable :symbol 'htprofile--show-log-to
+                                         :type 'integer)))
+    (insert (format "showing (%s): " (htprofile-data-list-length)))
+    (htpwidget-insert-variable-value from-var)
+    (insert "--")
+    (htpwidget-insert-variable-value to-var)
+    (insert " ")
+    (htpwidget-insert-evbutton "edit" (list from-var to-var))
+    (insert "\n"))
+  ;; (insert (format "total: %s\n" (htprofile-data-list-length)))
   (let* ((description (format "elapsed time is shown as: %s\n"
                               (htprofile-get-float-format-description)))
          (header-plain (format "%s %s  %s %s %s\n"
