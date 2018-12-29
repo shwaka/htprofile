@@ -50,24 +50,27 @@
 (defun htprofile-maybe-remove-newline (str)
   (when htprofile-remove-newline
     (replace-regexp-in-string "\n" " " str)))
-(defvar htprofile--data-count 0)
+(defvar htprofile--data-id 0)
 (cl-defstruct (htprofile-data (:constructor make-htprofile-data--internal))
   "func-name must be a string"
-  type func-name elapsed-time idle-time count current-time)
+  type func-name elapsed-time idle-time id current-time)
 (cl-defun make-htprofile-data (&key type func-name elapsed-time idle-time)
   (let ((func-name-str (if (stringp func-name)
                            func-name
                          (format htprofile-func-name-format
                                  func-name))))
-    (setq htprofile--data-count (1+ htprofile--data-count))
+    (setq htprofile--data-id (1+ htprofile--data-id))
     (make-htprofile-data--internal :type type
                                    :func-name func-name-str
                                    :elapsed-time elapsed-time
                                    :idle-time idle-time
-                                   :count htprofile--data-count
+                                   :id htprofile--data-id
                                    :current-time (current-time))))
+(defvar htprofile-data-id-digit 6)
 (defun htprofile-data-to-str (data)
-  (format "%s  %-20s %s %s"
+  (format "%s %s  %-20s %s %s"
+          (format (format "%%%dd" htprofile-data-id-digit)
+                  (htprofile-data-id data))
           (format-time-string "%H:%M:%S" (htprofile-data-current-time data))
           (htprofile-get-type-str (htprofile-data-type data)
                                   (htprofile-data-idle-time data))
@@ -77,7 +80,8 @@
   "get header"
   (let* ((description (format "elapsed time is shown as: %s\n"
                               (htprofile-get-float-format-description)))
-         (header-plain (format "%s  %s %s %s\n"
+         (header-plain (format "%s %s  %s %s %s\n"
+                               (format (format "%%-%ds" htprofile-data-id-digit) "id")
                                (format "%-8s" "current")
                                (format "%-20s" "type")
                                (htprofile-format "elapsed" (htprofile-get-float-width))
