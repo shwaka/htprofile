@@ -130,7 +130,8 @@
 ;;; button to edit variables
 ;;; EVbutton = Edit Variable button
 (define-button-type 'htpwidget-evbutton
-  'action 'htpwidget-evbutton-pressed)
+  'action 'htpwidget-evbutton-pressed
+  'follow-link t)
 
 (defun htpwidget-evbutton-pressed (button)
   (let ((variable-list (button-get button 'htpwidget-variable-list)))

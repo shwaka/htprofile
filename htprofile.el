@@ -109,8 +109,10 @@
 (defun htprofile-insert-data-header ()
   "insert header"
   (let ((text "update"))
-    (insert-button text 'action (lambda (button)
-                                  (htprofile-update-log)))
+    (insert-button text
+                   'action (lambda (button)
+                             (htprofile-update-log))
+                   'follow-link t)
     (insert "\n"))
   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
                                            :type 'integer))
