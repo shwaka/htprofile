@@ -6,3 +6,4 @@
 - ずっと有効にしてると重くなったりしない？
 - `htprofile-show-*` のバッファで interactive に sort とか filtering の設定ができるように
     * text property の button あたりを使うと良さげ？
+- 色の指定は直接やるんじゃなくて，適切な face から inherit する

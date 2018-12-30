@@ -54,7 +54,6 @@
                  text-raw))
          (name (htpwidget-textfield-name textfield)))
     (insert (propertize text
-                        'face 'font-lock-keyword-face
                         'htpwidget-textfield name))))
 
 (defun htpwidget-update-textfield (textfield text)
@@ -76,6 +75,12 @@ Point will move to the end of the updated text."
       (htpwidget-insert-textfield textfield))))
 
 ;;; variable
+(defface htpwidget-variable-face
+  '((t
+     :foreground "yellow"
+     ))
+  "face for variable")
+
 (cl-defstruct (htpwidget-variable (:constructor make-htpwidget-variable--internal))
   symbol type textfield candidates)
 
@@ -84,7 +89,9 @@ Point will move to the end of the updated text."
     (error "invalid variable type"))
   (let* ((text (format "%s" (eval symbol)))
          (name (intern (format "htpwidget-variable:%s" (symbol-name symbol))))
-         (tf (make-htpwidget-textfield :text text :name name)))
+         (tf (make-htpwidget-textfield :text (propertize text
+                                                         'face 'htpwidget-variable-face)
+                                       :name name)))
     (make-htpwidget-variable--internal :symbol symbol
                                       :type type
                                       :textfield tf
@@ -98,7 +105,8 @@ Point will move to the end of the updated text."
          (tf (htpwidget-variable-textfield variable))
          (old-value (eval symbol)))
     (set symbol value)
-    (htpwidget-update-textfield tf (format "%s" (eval symbol)))
+    (htpwidget-update-textfield tf (propertize (format "%s" (eval symbol))
+                                               'face 'htpwidget-variable-face))
     (unless (equal value old-value)
       (htpwidget-make-tfm-modified))))
 
@@ -162,7 +170,8 @@ Point will move to the end of the updated text."
 (defun htpwidget-make-tfm-modified ()
   (let ((tfm htpwidget-textfield-for-modification))
     (when tfm
-      (htpwidget-update-textfield tfm " modified"))))
+      (htpwidget-update-textfield tfm (propertize " modified"
+                                                  'face '(:foreground "orange"))))))
 
 (defun htpwidget-make-tfm-uptodate ()
   (let ((tfm htpwidget-textfield-for-modification))
