@@ -138,13 +138,8 @@
       (htpwidget-edit-variable var))))
 
 (defun htpwidget-insert-evbutton (text variable-list)
-  (let ((beg (point))
-        end)
-    (insert text)
-    (setq end (point))
-    (make-button beg end
-                 :type 'htpwidget-evbutton
-                 'htpwidget-variable-list variable-list)))
+  (insert-button text :type 'htpwidget-evbutton
+                 'htpwidget-variable-list variable-list))
 
 
 (provide 'htprofile-widgets)

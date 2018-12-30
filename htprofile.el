@@ -108,14 +108,9 @@
           (htprofile-maybe-remove-newline (htprofile-data-func-name data))))
 (defun htprofile-insert-data-header ()
   "insert header"
-  (let ((text "update")
-        (beg (point))
-        end)
-    (insert text)
-    (setq end (point))
-    (make-button beg end
-                 'action (lambda (button)
-                           (htprofile-update-log)))
+  (let ((text "update"))
+    (insert-button text 'action (lambda (button)
+                                  (htprofile-update-log)))
     (insert "\n"))
   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
                                            :type 'integer))
