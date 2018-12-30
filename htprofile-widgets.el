@@ -94,10 +94,13 @@ Point will move to the end of the updated text."
   (eval (htpwidget-variable-symbol variable)))
 
 (defun htpwidget-update-variable (variable value)
-  (let ((symbol (htpwidget-variable-symbol variable))
-        (tf (htpwidget-variable-textfield variable)))
+  (let* ((symbol (htpwidget-variable-symbol variable))
+         (tf (htpwidget-variable-textfield variable))
+         (old-value (eval symbol)))
     (set symbol value)
-    (htpwidget-update-textfield tf (format "%s" (eval symbol)))))
+    (htpwidget-update-textfield tf (format "%s" (eval symbol)))
+    (unless (equal value old-value)
+      (htpwidget-make-tfm-modified))))
 
 (defun htpwidget-insert-variable-value (variable)
   (htpwidget-insert-textfield (htpwidget-variable-textfield variable)))
@@ -144,6 +147,26 @@ Point will move to the end of the updated text."
   (insert-button text :type 'htpwidget-evbutton
                  'htpwidget-variable-list variable-list))
 
+;;; Inform that there is a modification of variable which is not applied
+(defvar htpwidget-textfield-for-modification nil)
+(make-variable-buffer-local 'htpwidget-textfield-for-modification)
+
+(defun htpwidget-insert-tfm ()
+  (let ((tfm (make-htpwidget-textfield :text "aiueo"
+                                       :name 'htpwidget-textfield-for-modification)))
+    (setq htpwidget-textfield-for-modification tfm)
+    (htpwidget-insert-textfield tfm)
+    (htpwidget-make-tfm-uptodate)))
+
+(defun htpwidget-make-tfm-modified ()
+  (let ((tfm htpwidget-textfield-for-modification))
+    (when tfm
+      (htpwidget-update-textfield tfm "modified"))))
+
+(defun htpwidget-make-tfm-uptodate ()
+  (let ((tfm htpwidget-textfield-for-modification))
+    (when tfm
+      (htpwidget-update-textfield tfm "up-to-date"))))
 
 (provide 'htprofile-widgets)
 ;;; htprofile-widgets.el ends here

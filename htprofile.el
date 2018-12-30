@@ -111,8 +111,10 @@
   (let ((text "update"))
     (insert-button text
                    'action (lambda (button)
-                             (htprofile-update-log))
+                             (htprofile-update-log)
+                             (htpwidget-make-tfm-uptodate))
                    'follow-link t)
+    (htpwidget-insert-tfm)
     (insert "\n"))
   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
                                            :type 'integer))
