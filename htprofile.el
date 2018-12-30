@@ -362,8 +362,8 @@ The value should be one of the following:
   "show data in a buffer *htprofile-log*"
   (interactive)
   (let ((len (htprofile-data-list-length)))
-    (setq htprofile--show-log-from (- len htprofile-max-log)
-         htprofile--show-log-to len))
+    (setq htprofile--show-log-from (max 0 (- len htprofile-max-log))
+          htprofile--show-log-to len))
   (htprofile-update-log)
   (with-current-buffer (get-buffer htprofile-log-buffer)
     (goto-char (point-min))
