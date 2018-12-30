@@ -58,20 +58,22 @@
                         'htpwidget-textfield name))))
 
 (defun htpwidget-update-textfield (textfield text)
-  (save-excursion
-    (setf (htpwidget-textfield-text textfield) text)
-    (let* ((inhibit-read-only t)
-           (name (htpwidget-textfield-name textfield))
-           (begin (text-property-any (point-min) (point-max)
-                                     'htpwidget-textfield name))
-           (end (if begin
-                    (or (next-single-property-change begin 'htpwidget-textfield)
-                        (point-max))
-                  nil)))
-      (when (and begin end)
-        (goto-char begin)
+  "Update TEXTFIELD with TEXT.
+
+Point will move to the end of the updated text."
+  (setf (htpwidget-textfield-text textfield) text)
+  (let* ((inhibit-read-only t)
+         (name (htpwidget-textfield-name textfield))
+         (begin (text-property-any (point-min) (point-max)
+                                   'htpwidget-textfield name))
+         (end (if begin
+                  (or (next-single-property-change begin 'htpwidget-textfield)
+                      (point-max))
+                nil)))
+    (when (and begin end)
+      (goto-char begin)
       (delete-char (- end begin))
-      (htpwidget-insert-textfield textfield)))))
+      (htpwidget-insert-textfield textfield))))
 
 ;;; variable
 (cl-defstruct (htpwidget-variable (:constructor make-htpwidget-variable--internal))
