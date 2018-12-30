@@ -1,3 +1,31 @@
+;;; htprofile.el --- Profile pre/post-command-hook and (idle-)timer  -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2018  Shun Wakatsuki
+
+;; Author: Shun Wakatsuki <shun.wakatsuki@gmail.com>
+;; Keywords: convenience
+;; Package-Requires: (cl-lib)
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;;
+;; This package may be useful when your Emacs become heavy and you don't
+;; know which function is heavy.
+
+;;; Code:
+
 (require 'cl-lib)
 (require 'htprofile-widgets)
 
@@ -345,3 +373,4 @@ The value should be one of the following:
     (display-buffer (current-buffer))))
 
 (provide 'htprofile)
+;;; htprofile.el ends here
