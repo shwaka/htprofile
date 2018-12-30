@@ -141,7 +141,8 @@ Point will move to the end of the updated text."
 (defun htpwidget-evbutton-pressed (button)
   (let ((variable-list (button-get button 'htpwidget-variable-list)))
     (dolist (var variable-list)
-      (htpwidget-edit-variable var))))
+      (save-excursion
+        (htpwidget-edit-variable var)))))
 
 (defun htpwidget-insert-evbutton (text variable-list)
   (insert-button text :type 'htpwidget-evbutton
