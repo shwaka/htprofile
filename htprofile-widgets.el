@@ -153,7 +153,7 @@ Point will move to the end of the updated text."
 (make-variable-buffer-local 'htpwidget-textfield-for-modification)
 
 (defun htpwidget-insert-tfm ()
-  (let ((tfm (make-htpwidget-textfield :text "aiueo"
+  (let ((tfm (make-htpwidget-textfield :text ""
                                        :name 'htpwidget-textfield-for-modification)))
     (setq htpwidget-textfield-for-modification tfm)
     (htpwidget-insert-textfield tfm)
@@ -162,12 +162,12 @@ Point will move to the end of the updated text."
 (defun htpwidget-make-tfm-modified ()
   (let ((tfm htpwidget-textfield-for-modification))
     (when tfm
-      (htpwidget-update-textfield tfm "modified"))))
+      (htpwidget-update-textfield tfm " modified"))))
 
 (defun htpwidget-make-tfm-uptodate ()
   (let ((tfm htpwidget-textfield-for-modification))
     (when tfm
-      (htpwidget-update-textfield tfm "up-to-date"))))
+      (htpwidget-update-textfield tfm " "))))
 
 (provide 'htprofile-widgets)
 ;;; htprofile-widgets.el ends here

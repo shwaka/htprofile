@@ -112,7 +112,8 @@
     (insert-button text
                    'action (lambda (button)
                              (htprofile-update-log)
-                             (htpwidget-make-tfm-uptodate))
+                             (save-excursion
+                               (htpwidget-make-tfm-uptodate)))
                    'follow-link t)
     (htpwidget-insert-tfm)
     (insert "\n"))
