@@ -63,7 +63,6 @@
 ;;; buffer-list-update-hook とかは出てくるけど，
 ;;; 肝心の pre(post)-command-hook は出てこない
 ;; (defun around:run-hooks (orig-func &rest args)
-;;   (my-message "%S" args)
 ;;   (apply orig-func args))
 ;; (advice-add 'run-hooks :around 'around:run-hooks)
 (defun htprofile-profile-hook (hook-var)
@@ -104,7 +103,6 @@
 (defvar htprofile--update-detected nil)
 (make-variable-buffer-local 'htprofile--update-detected)
 (defun htprofile--variable-after-update-hook ()
-  (my-message "%S" "upd")
   (setq htprofile--update-detected t))
 
 (defun htprofile-handle-detected-update ()
