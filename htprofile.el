@@ -338,10 +338,19 @@ The value should be one of the following:
 (defun htprofile-insert-stat-header ()
   "insert header"
   (htprofile-insert-update-button)
-  (let* ((description (concat (format "total-time, max-time, average-time are shown as: %s\n"
-                                      (htprofile-get-float-format-description))
-                              (format "sort by: %s\n" htprofile-sort-by)))
-         (header-plain (format "%s %s %s %s %s %s\n"
+  (insert (format "total-time, max-time, average-time are shown as: %s\n"
+                  (htprofile-get-float-format-description)))
+  (let ((sort-by-var (make-htpwidget-variable :symbol 'htprofile-sort-by
+                                              :type 'symbol
+                                              :after-update-hook 'htprofile--variable-after-update-hook
+                                              :candidates '(total-time max-time average-time))))
+    (insert "sort by: ")
+    (htpwidget-insert-variable-value sort-by-var)
+    (insert " ")
+    (htpwidget-insert-evbutton "edit" (list sort-by-var) 'htprofile-handle-detected-update)
+    (insert "\n"))
+  (insert "\n")
+  (let* ((header-plain (format "%s %s %s %s %s %s\n"
                                (format "%-20s" "type")
                                (format "%-5s" "count")
                                (htprofile-format "total" (htprofile-get-float-width))
@@ -350,7 +359,7 @@ The value should be one of the following:
                                "func"))
          (header (propertize header-plain
                              'face '(:inverse-video t))))
-    (insert (format "%s\n%s" description header))))
+    (insert header)))
 
 
 ;;; interface

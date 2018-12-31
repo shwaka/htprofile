@@ -85,7 +85,7 @@ Point will move to the end of the updated text."
   symbol type textfield candidates after-update-hook)
 
 (cl-defun make-htpwidget-variable (&key symbol type candidates after-update-hook)
-  (unless (find type '(integer string))
+  (unless (find type '(integer string symbol))
     (error "invalid variable type"))
   (let* ((text (format "%s" (eval symbol)))
          (name (intern (format "htpwidget-variable:%s" (symbol-name symbol))))
@@ -140,7 +140,14 @@ Point will move to the end of the updated text."
                            old-value))
       (setq new-value
             (completing-read prompt candidates nil t
-                             nil nil old-value))))
+                             nil nil old-value)))
+     ((eq type 'symbol)
+      (setq prompt (format "Input %s (symbol name, defualt %s): "
+                           symbol
+                           old-value))
+      (setq new-value
+            (intern (completing-read prompt candidates nil t
+                                     nil nil old-value)))))
     (htpwidget-update-variable variable new-value)))
 
 ;;; button to edit variables
