@@ -76,8 +76,7 @@
       (add-to-list 'htprofile--advice-list (cons func advice-name)))))
 
 ;;; Handle modification of variables
-(defun htprofile--variable-after-update-hook ()
-  (htprofile-make-tfm-modified))
+(defvar htprofile-auto-update t)
 
 (defvar htprofile-textfield-for-modification nil)
 (make-variable-buffer-local 'htprofile-textfield-for-modification)
@@ -99,6 +98,13 @@
   (let ((tfm htprofile-textfield-for-modification))
     (when tfm
       (htpwidget-update-textfield tfm " "))))
+
+(defvar htprofile--buffer-update-function nil)
+(make-variable-buffer-local 'htprofile--buffer-update-function)
+(defun htprofile--variable-after-update-hook ()
+  (if htprofile-auto-update
+      (funcall htprofile--buffer-update-function)
+    (htprofile-make-tfm-modified)))
 
 ;;; profiler
 (defvar htprofile-remove-newline t
@@ -139,7 +145,7 @@
                    'action (lambda (button)
                              (htprofile-update-log)
                              (save-excursion
-                               (htpwidget-make-tfm-uptodate)))
+                               (htprofile-make-tfm-uptodate)))
                    'follow-link t)
     (htprofile-insert-tfm)
     (insert "\n"))
@@ -388,6 +394,7 @@ The value should be one of the following:
   (interactive)
   (htprofile-update-statistics)
   (with-current-buffer (get-buffer htprofile-statistics-buffer)
+    (setq htprofile--buffer-update-function 'htprofile-update-statistics)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
 (defvar htprofile-max-log
@@ -413,6 +420,7 @@ The value should be one of the following:
           htprofile--show-log-to len))
   (htprofile-update-log)
   (with-current-buffer (get-buffer htprofile-log-buffer)
+    (setq htprofile--buffer-update-function 'htprofile-update-log)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
 
