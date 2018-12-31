@@ -147,17 +147,19 @@
                                   (htprofile-data-idle-time data))
           (htprofile-float-to-str (float-time (htprofile-data-elapsed-time data)))
           (htprofile-maybe-remove-newline (htprofile-data-func-name data))))
-(defun htprofile-insert-data-header ()
-  "insert header"
+(defun htprofile-insert-update-button ()
   (let ((text "update"))
     (insert-button text
                    'action (lambda (button)
-                             (htprofile-update-log)
+                             (funcall htprofile--buffer-update-function)
                              (save-excursion
                                (htprofile-make-tfm-uptodate)))
                    'follow-link t)
     (htprofile-insert-tfm)
-    (insert "\n"))
+    (insert "\n")))
+(defun htprofile-insert-data-header ()
+  "insert header"
+  (htprofile-insert-update-button)
   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
                                            :type 'integer
                                            :after-update-hook 'htprofile--variable-after-update-hook))
@@ -333,8 +335,9 @@ The value should be one of the following:
             (htprofile-float-to-str (htprofile-stat-max-time stat))
             (htprofile-float-to-str (htprofile-stat-average-time stat))
             (htprofile-maybe-remove-newline (htprofile-stat-func stat)))))
-(defun htprofile-get-stat-header ()
-  "get header"
+(defun htprofile-insert-stat-header ()
+  "insert header"
+  (htprofile-insert-update-button)
   (let* ((description (concat (format "total-time, max-time, average-time are shown as: %s\n"
                                       (htprofile-get-float-format-description))
                               (format "sort by: %s\n" htprofile-sort-by)))
@@ -347,7 +350,7 @@ The value should be one of the following:
                                "func"))
          (header (propertize header-plain
                              'face '(:inverse-video t))))
-    (format "%s\n%s" description header)))
+    (insert (format "%s\n%s" description header))))
 
 
 ;;; interface
@@ -387,17 +390,18 @@ The value should be one of the following:
 (defvar htprofile-statistics-buffer "*htprofile-stat*")
 (defun htprofile-update-statistics ()
   (with-current-buffer (htprofile-get-clean-buffer htprofile-statistics-buffer)
-    (let (stat-list
-          (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
-      (dolist (data-list-with-key (htprofile-split-data-list-by-keys))
-        (let ((key (car data-list-with-key))
-              (data-list (cdr data-list-with-key)))
-          (push (htprofile-compute-summary key data-list) stat-list)))
-      (setq stat-list (cl-sort stat-list '> :key sort-key-func))
-      (let ((inhibit-read-only t))
-        (insert (htprofile-get-stat-header))
-        (dolist (stat stat-list)
-          (insert (htprofile-stat-to-str stat)))))))
+    (save-excursion
+      (let (stat-list
+            (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
+        (dolist (data-list-with-key (htprofile-split-data-list-by-keys))
+          (let ((key (car data-list-with-key))
+                (data-list (cdr data-list-with-key)))
+            (push (htprofile-compute-summary key data-list) stat-list)))
+        (setq stat-list (cl-sort stat-list '> :key sort-key-func))
+        (let ((inhibit-read-only t))
+          (htprofile-insert-stat-header)
+          (dolist (stat stat-list)
+            (insert (htprofile-stat-to-str stat))))))))
 (defun htprofile-show-statistics ()
   "show data in a buffer *htprofile-stat*"
   (interactive)
