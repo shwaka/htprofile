@@ -4,7 +4,7 @@
 
 ;; Author: Shun Wakatsuki <shun.wakatsuki@gmail.com>
 ;; Keywords: convenience
-;; Package-Requires: (cl-lib)
+;; Package-Requires: (cl-lib seq)
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'seq)
 (require 'htprofile-widgets)
 
 (defvar htprofile-data-list ()
@@ -161,17 +162,23 @@
           htprofile-data-list)))
 
 ;;; get data
-(defun htprofile-get-data-list (&optional beg end)
-  (let ((len (length htprofile-data-list)))
+(defvar htprofile-data-filter-function nil)
+(defun htprofile-get-data-list (&optional beg end filter)
+  (let ((len (length htprofile-data-list))
+        data-list)
     (if beg
         (setq beg (max beg 0))
       (setq beg 0))
     (if end
         (setq end (min end len))
       (setq end len))
-    (cl-subseq htprofile-data-list
-               (- len end)
-               (- len beg))))
+    (setq data-list (cl-subseq htprofile-data-list
+                               (- len end)
+                               (- len beg)))
+    (if filter
+        (seq-filter filter data-list)
+      data-list)))
+
 (defun htprofile-data-list-length ()
   (length htprofile-data-list))
 
@@ -182,7 +189,7 @@
   total-time max-time average-time)
 (defun htprofile-split-data-list-by-keys ()
   (let (data-list-alist)
-    (dolist (data (htprofile-get-data-list))
+    (dolist (data (htprofile-get-data-list nil nil htprofile-data-filter-function))
       (let ((key (htprofile-data-to-key data)))
         (if (assoc key data-list-alist)
             (push data (cdr (assoc key data-list-alist)))
@@ -359,7 +366,8 @@ The value should be one of the following:
       (let ((inhibit-read-only t))
         (htprofile-insert-data-header)
         (dolist (data (htprofile-get-data-list htprofile--show-log-from
-                                               htprofile--show-log-to))
+                                               htprofile--show-log-to
+                                               htprofile-data-filter-function))
           (insert (format "%s\n" (htprofile-data-to-str data))))))))
 (defun htprofile-show-log ()
   "show data in a buffer *htprofile-log*"
@@ -371,6 +379,15 @@ The value should be one of the following:
   (with-current-buffer (get-buffer htprofile-log-buffer)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
+
+;;; filter function
+(defvar htprofile-min-elapsed-time 50
+  "Time (millisecond) used in `htprofile-filter-by-elapsed-time'.")
+(make-variable-buffer-local 'htprofile-min-elapsed-time)
+(defun htprofile-filter-by-elapsed-time (data)
+  (let* ((time (htprofile-data-elapsed-time data))
+         (time-float (float-time time)))
+    (> (* 1000 time-float) htprofile-min-elapsed-time)))
 
 (provide 'htprofile)
 ;;; htprofile.el ends here
