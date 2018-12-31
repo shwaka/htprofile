@@ -111,7 +111,6 @@ Point will move to the end of the updated text."
                                                'face 'htpwidget-variable-face))
     (when (and (not (equal value old-value))
                (functionp after-update-hook))
-      ;; (htpwidget-make-tfm-modified)
       (funcall after-update-hook))))
 
 (defun htpwidget-insert-variable-value (variable)
@@ -159,28 +158,6 @@ Point will move to the end of the updated text."
 (defun htpwidget-insert-evbutton (text variable-list)
   (insert-button text :type 'htpwidget-evbutton
                  'htpwidget-variable-list variable-list))
-
-;;; Inform that there is a modification of variable which is not applied
-(defvar htpwidget-textfield-for-modification nil)
-(make-variable-buffer-local 'htpwidget-textfield-for-modification)
-
-(defun htpwidget-insert-tfm ()
-  (let ((tfm (make-htpwidget-textfield :text ""
-                                       :name 'htpwidget-textfield-for-modification)))
-    (setq htpwidget-textfield-for-modification tfm)
-    (htpwidget-insert-textfield tfm)
-    (htpwidget-make-tfm-uptodate)))
-
-(defun htpwidget-make-tfm-modified ()
-  (let ((tfm htpwidget-textfield-for-modification))
-    (when tfm
-      (htpwidget-update-textfield tfm (propertize " modified"
-                                                  'face 'warning)))))
-
-(defun htpwidget-make-tfm-uptodate ()
-  (let ((tfm htpwidget-textfield-for-modification))
-    (when tfm
-      (htpwidget-update-textfield tfm " "))))
 
 (provide 'htprofile-widgets)
 ;;; htprofile-widgets.el ends here

@@ -75,9 +75,30 @@
       (advice-add func :around advice-name)
       (add-to-list 'htprofile--advice-list (cons func advice-name)))))
 
-;;; after-update-hook
+;;; Handle modification of variables
 (defun htprofile--variable-after-update-hook ()
-  (htpwidget-make-tfm-modified))
+  (htprofile-make-tfm-modified))
+
+(defvar htprofile-textfield-for-modification nil)
+(make-variable-buffer-local 'htprofile-textfield-for-modification)
+
+(defun htprofile-insert-tfm ()
+  (let ((tfm (make-htpwidget-textfield :text ""
+                                       :name 'htprofile-textfield-for-modification)))
+    (setq htprofile-textfield-for-modification tfm)
+    (htpwidget-insert-textfield tfm)
+    (htprofile-make-tfm-uptodate)))
+
+(defun htprofile-make-tfm-modified ()
+  (let ((tfm htprofile-textfield-for-modification))
+    (when tfm
+      (htpwidget-update-textfield tfm (propertize " modified"
+                                                  'face 'warning)))))
+
+(defun htprofile-make-tfm-uptodate ()
+  (let ((tfm htprofile-textfield-for-modification))
+    (when tfm
+      (htpwidget-update-textfield tfm " "))))
 
 ;;; profiler
 (defvar htprofile-remove-newline t
@@ -120,7 +141,7 @@
                              (save-excursion
                                (htpwidget-make-tfm-uptodate)))
                    'follow-link t)
-    (htpwidget-insert-tfm)
+    (htprofile-insert-tfm)
     (insert "\n"))
   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
                                            :type 'integer
