@@ -77,9 +77,9 @@ Point will move to the end of the updated text."
 ;;; variable
 (defface htpwidget-variable-face
   '((t
-     :foreground "yellow"
+     :inherit font-lock-constant-face
      ))
-  "face for variable")
+  "face for variable value")
 
 (cl-defstruct (htpwidget-variable (:constructor make-htpwidget-variable--internal))
   symbol type textfield candidates)
@@ -171,7 +171,7 @@ Point will move to the end of the updated text."
   (let ((tfm htpwidget-textfield-for-modification))
     (when tfm
       (htpwidget-update-textfield tfm (propertize " modified"
-                                                  'face '(:foreground "orange"))))))
+                                                  'face 'warning)))))
 
 (defun htpwidget-make-tfm-uptodate ()
   (let ((tfm htpwidget-textfield-for-modification))
