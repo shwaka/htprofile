@@ -101,10 +101,18 @@
 
 (defvar htprofile--buffer-update-function nil)
 (make-variable-buffer-local 'htprofile--buffer-update-function)
+(defvar htprofile--update-detected nil)
+(make-variable-buffer-local 'htprofile--update-detected)
 (defun htprofile--variable-after-update-hook ()
-  (if htprofile-auto-update
+  (my-message "%S" "upd")
+  (setq htprofile--update-detected t))
+
+(defun htprofile-handle-detected-update ()
+  (when htprofile--update-detected
+    (if htprofile-auto-update
       (funcall htprofile--buffer-update-function)
     (htprofile-make-tfm-modified)))
+  (setq htprofile--update-detected nil))
 
 ;;; profiler
 (defvar htprofile-remove-newline t
@@ -160,7 +168,7 @@
     (insert "--")
     (htpwidget-insert-variable-value to-var)
     (insert " ")
-    (htpwidget-insert-evbutton "edit" (list from-var to-var))
+    (htpwidget-insert-evbutton "edit" (list from-var to-var) 'htprofile-handle-detected-update)
     (insert "\n"))
   ;; (insert (format "total: %s\n" (htprofile-data-list-length)))
   (when (eq htprofile-data-filter-function 'htprofile-default-filter-function)
@@ -170,7 +178,7 @@
       (insert "minimum elapsed time: ")
       (htpwidget-insert-variable-value min-time-var)
       (insert " ")
-      (htpwidget-insert-evbutton "edit" (list min-time-var))
+      (htpwidget-insert-evbutton "edit" (list min-time-var) 'htprofile-handle-detected-update)
       (insert "\n")))
   (let* ((description (format "elapsed time is shown as: %s\n"
                               (htprofile-get-float-format-description)))

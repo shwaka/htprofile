@@ -150,14 +150,18 @@ Point will move to the end of the updated text."
   'follow-link t)
 
 (defun htpwidget-evbutton-pressed (button)
-  (let ((variable-list (button-get button 'htpwidget-variable-list)))
+  (let ((variable-list (button-get button 'htpwidget-variable-list))
+        (after-edit-hook (button-get button 'htpwidget-after-edit-hook)))
     (dolist (var variable-list)
       (save-excursion
-        (htpwidget-edit-variable var)))))
+        (htpwidget-edit-variable var)))
+    (when (functionp after-edit-hook)
+      (funcall after-edit-hook))))
 
-(defun htpwidget-insert-evbutton (text variable-list)
+(defun htpwidget-insert-evbutton (text variable-list &optional after-edit-hook)
   (insert-button text :type 'htpwidget-evbutton
-                 'htpwidget-variable-list variable-list))
+                 'htpwidget-variable-list variable-list
+                 'htpwidget-after-edit-hook after-edit-hook))
 
 (provide 'htprofile-widgets)
 ;;; htprofile-widgets.el ends here
