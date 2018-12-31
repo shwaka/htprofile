@@ -108,8 +108,11 @@
 (defun htprofile-handle-detected-update ()
   (when htprofile--update-detected
     (if htprofile-auto-update
-      (funcall htprofile--buffer-update-function)
-    (htprofile-make-tfm-modified)))
+        (let ((pt (point)))
+          ;; save-excursion doesn't work because of erase-buffer in the update function
+          (funcall htprofile--buffer-update-function)
+          (goto-char pt))
+      (htprofile-make-tfm-modified)))
   (setq htprofile--update-detected nil))
 
 ;;; profiler
