@@ -130,6 +130,14 @@
     (htpwidget-insert-evbutton "edit" (list from-var to-var))
     (insert "\n"))
   ;; (insert (format "total: %s\n" (htprofile-data-list-length)))
+  (when (eq htprofile-data-filter-function 'htprofile-default-filter-function)
+    (let ((min-time-var (make-htpwidget-variable :symbol 'htprofile-min-elapsed-time
+                                                 :type 'integer)))
+      (insert "minimum elapsed time: ")
+      (htpwidget-insert-variable-value min-time-var)
+      (insert " ")
+      (htpwidget-insert-evbutton "edit" (list min-time-var))
+      (insert "\n")))
   (let* ((description (format "elapsed time is shown as: %s\n"
                               (htprofile-get-float-format-description)))
          (header-plain (format "%s %s  %s %s %s\n"
@@ -162,7 +170,7 @@
           htprofile-data-list)))
 
 ;;; get data
-(defvar htprofile-data-filter-function nil)
+(defvar htprofile-data-filter-function 'htprofile-default-filter-function)
 (defun htprofile-get-data-list (&optional beg end filter)
   (let ((len (length htprofile-data-list))
         data-list)
@@ -381,13 +389,13 @@ The value should be one of the following:
     (display-buffer (current-buffer))))
 
 ;;; filter function
-(defvar htprofile-min-elapsed-time 50
-  "Time (millisecond) used in `htprofile-filter-by-elapsed-time'.")
+(defvar htprofile-min-elapsed-time 0
+  "Time (millisecond) used in `htprofile-default-filter-function'.")
 (make-variable-buffer-local 'htprofile-min-elapsed-time)
-(defun htprofile-filter-by-elapsed-time (data)
+(defun htprofile-default-filter-function (data)
   (let* ((time (htprofile-data-elapsed-time data))
          (time-float (float-time time)))
-    (> (* 1000 time-float) htprofile-min-elapsed-time)))
+    (>= (* 1000 time-float) htprofile-min-elapsed-time)))
 
 (provide 'htprofile)
 ;;; htprofile.el ends here
