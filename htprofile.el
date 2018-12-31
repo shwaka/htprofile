@@ -75,6 +75,10 @@
       (advice-add func :around advice-name)
       (add-to-list 'htprofile--advice-list (cons func advice-name)))))
 
+;;; after-update-hook
+(defun htprofile--variable-after-update-hook ()
+  (htpwidget-make-tfm-modified))
+
 ;;; profiler
 (defvar htprofile-remove-newline t
   "When non-nil, remove newline in function names (recommended)")
@@ -119,9 +123,11 @@
     (htpwidget-insert-tfm)
     (insert "\n"))
   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
-                                           :type 'integer))
+                                           :type 'integer
+                                           :after-update-hook 'htprofile--variable-after-update-hook))
         (to-var (make-htpwidget-variable :symbol 'htprofile--show-log-to
-                                         :type 'integer)))
+                                         :type 'integer
+                                         :after-update-hook 'htprofile--variable-after-update-hook)))
     (insert (format "showing (%s): " (htprofile-data-list-length)))
     (htpwidget-insert-variable-value from-var)
     (insert "--")
@@ -132,7 +138,8 @@
   ;; (insert (format "total: %s\n" (htprofile-data-list-length)))
   (when (eq htprofile-data-filter-function 'htprofile-default-filter-function)
     (let ((min-time-var (make-htpwidget-variable :symbol 'htprofile-min-elapsed-time
-                                                 :type 'integer)))
+                                                 :type 'integer
+                                                 :after-update-hook 'htprofile--variable-after-update-hook)))
       (insert "minimum elapsed time: ")
       (htpwidget-insert-variable-value min-time-var)
       (insert " ")

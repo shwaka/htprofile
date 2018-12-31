@@ -82,9 +82,9 @@ Point will move to the end of the updated text."
   "face for variable value")
 
 (cl-defstruct (htpwidget-variable (:constructor make-htpwidget-variable--internal))
-  symbol type textfield candidates)
+  symbol type textfield candidates after-update-hook)
 
-(cl-defun make-htpwidget-variable (&key symbol type candidates)
+(cl-defun make-htpwidget-variable (&key symbol type candidates after-update-hook)
   (unless (find type '(integer string))
     (error "invalid variable type"))
   (let* ((text (format "%s" (eval symbol)))
@@ -95,7 +95,8 @@ Point will move to the end of the updated text."
     (make-htpwidget-variable--internal :symbol symbol
                                       :type type
                                       :textfield tf
-                                      :candidates candidates)))
+                                      :candidates candidates
+                                      :after-update-hook after-update-hook)))
 
 (defun htpwidget-variable-value (variable)
   (eval (htpwidget-variable-symbol variable)))
@@ -103,12 +104,15 @@ Point will move to the end of the updated text."
 (defun htpwidget-update-variable (variable value)
   (let* ((symbol (htpwidget-variable-symbol variable))
          (tf (htpwidget-variable-textfield variable))
-         (old-value (eval symbol)))
+         (old-value (eval symbol))
+         (after-update-hook (htpwidget-variable-after-update-hook variable)))
     (set symbol value)
     (htpwidget-update-textfield tf (propertize (format "%s" (eval symbol))
                                                'face 'htpwidget-variable-face))
-    (unless (equal value old-value)
-      (htpwidget-make-tfm-modified))))
+    (when (and (not (equal value old-value))
+               (functionp after-update-hook))
+      ;; (htpwidget-make-tfm-modified)
+      (funcall after-update-hook))))
 
 (defun htpwidget-insert-variable-value (variable)
   (htpwidget-insert-textfield (htpwidget-variable-textfield variable)))
