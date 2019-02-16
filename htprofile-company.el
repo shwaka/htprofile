@@ -27,15 +27,48 @@
 
 (require 'htprofile-widgets)
 
-(defun htprofile-advice:company-call-backend (orig-func &rest args)
+;; (defun htprofile-advice:company-call-backend (orig-func &rest args)
+;;   (let ((start-time (current-time))
+;;         end-time
+;;         elapsed-time)
+;;     (apply orig-func args)
+;;     (setq end-time (current-time)
+;;           elapsed-time (time-subtract end-time start-time))
+;;     (my-message "%S" (list args (float-time elapsed-time)))))
+;; (advice-add 'company-call-backend :around 'htprofile-advice:company-call-backend)
+
+(defvar htprofile-company--advice-list ()
+  "list of advice functions")
+
+(defun htprofile-company-profile-backends ()
+  (let (backend-list)
+    ;; flatten company-backends (ignoring :with)
+    (dolist (backend company-backends)
+      (cond
+       ((symbolp backend) (add-to-list 'backend-list backend))
+       ((listp backend)
+        (dolist (b backend)
+          (unless (keywordp b)
+            (add-to-list 'backend-list b))))))
+    (htprofile-company--profile-backends backend-list)))
+(defun htprofile-company--profile-backends (backend-list)
+  "htprofile-profile-hook を参考"
+  (dolist (backend backend-list)
+    (let ((advice-name (intern (format "htprofile-company-advice:%s" backend))))
+      (eval `(defun ,advice-name (orig-func &rest args)
+               "advice added in order to profile"
+               (htprofile-company--run-backend-with-profile orig-func args (quote ,backend))))
+      (advice-add backend :around advice-name)
+      (add-to-list 'htprofile-company--advice-list (cons backend advice-name)))))
+(defun htprofile-company--run-backend-with-profile (backend args backend-name)
+  "htprofile-profile-func を参考"
   (let ((start-time (current-time))
         end-time
         elapsed-time)
-    (apply orig-func args)
-    (setq end-time (current-time)
-          elapsed-time (time-subtract end-time start-time))
-    (my-message "%S" (list args (float-time elapsed-time)))))
-(advice-add 'company-call-backend :around 'htprofile-advice:company-call-backend)
+    (prog1 (apply backend args)
+      (setq end-time (current-time)
+            elapsed-time (time-subtract end-time start-time))
+      (my-message "%S" (list backend-name args (float-time elapsed-time))))))
 
 (provide 'htprofile-company)
 ;;; htprofile-company.el ends here
