@@ -4,7 +4,7 @@
 
 ;; Author: Shun Wakatsuki <shun.wakatsuki@gmail.com>
 ;; Keywords: convenience
-;; Package-Requires: ()
+;; Package-Requires: (cl-lib)
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'htprofile-widgets)
 
 ;; (defun htprofile-advice:company-call-backend (orig-func &rest args)
@@ -39,6 +40,8 @@
 
 (defvar htprofile-company--advice-list ()
   "list of advice functions")
+(defvar htprofile-company-data-list ()
+  "save data to this variable")
 
 (defun htprofile-company-profile-backends ()
   (let (backend-list)
@@ -68,7 +71,22 @@
     (prog1 (apply backend args)
       (setq end-time (current-time)
             elapsed-time (time-subtract end-time start-time))
-      (my-message "%S" (list backend-name args (float-time elapsed-time))))))
+      (push (make-htprofile-company-data :backend-name backend-name
+                                         :args args
+                                         :elapsed-time elapsed-time)
+            htprofile-company-data-list))))
+
+;;; struct
+(cl-defstruct (htprofile-company-data (:constructor make-htprofile-company-data--internal))
+  "data for each call of company backend"
+  backend-name args elapsed-time)
+(cl-defun make-htprofile-company-data (&key backend-name args elapsed-time)
+  (assert (symbolp backend-name))
+  (assert (listp elapsed-time))
+  (my-message "%S" (list backend-name args (float-time elapsed-time)))
+  (make-htprofile-company-data--internal :backend-name backend-name
+                                         :args args
+                                         :elapsed-time elapsed-time))
 
 (provide 'htprofile-company)
 ;;; htprofile-company.el ends here
