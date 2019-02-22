@@ -49,6 +49,9 @@
          (percent-seq (format "%%%ss" (format "%s%d" align-str length))))
     (truncate-string-to-width (format percent-seq str)
                               length)))
+(defface htpv-header
+  '((t (:inverse-video t :foreground "white")))
+  "face for header")
 (defun htpv-get-header (format-list)
   (let ((header-whole ""))
     (dolist (format format-list)
@@ -57,7 +60,9 @@
              (header (htpv-format-header format)))
         (setq header-whole (concat header-whole
                                    (htpv-truncate-string header length align)))))
-    header-whole))
+    (setq header-whole (concat header-whole "\n")) ; 改行にもpropertyをつけたい
+    (propertize header-whole
+                'face 'htpv-header)))
 
 (defun htpv-get-row (format-list data)
   (let ((row ""))
@@ -81,27 +86,32 @@
               buffer-read-only t)
         (current-buffer)))))
 
+(defun htpv-show (format-list data-list)
+  (with-current-buffer (htpv-get-clean-buffer "*htpv-test*")
+    (let ((inhibit-read-only t))
+      (insert (htpv-get-header format-list))
+      ;; (insert "\n")
+      (dolist (data data-list)
+        (insert (htpv-get-row format-list data))
+        (insert "\n")))
+    (goto-char (point-min))
+    (display-buffer (current-buffer))))
+
 ;;; test
 (defun htpv-test-func (data)
   (format "%s" data))
 (defun htpv-test ()
   (interactive)
   (let* ((f1 (make-htpv-format :length 5
-                               :align 'right
+                               :align 'left
                                :header "hoge"
                                :func #'htpv-test-func))
          (f2 (make-htpv-format :length 4
-                               :align 'left
+                               :align 'right
                                :header "a"
                                :func #'htpv-test-func))
          (fl (list f1 f2)))
-    (with-current-buffer (htpv-get-clean-buffer "*htpv-test*")
-      (let ((inhibit-read-only t))
-        (insert (htpv-get-header fl))
-        (insert "\n")
-        (insert (htpv-get-row fl "foo")))
-      (goto-char (point-min))
-      (display-buffer (current-buffer)))))
+    (htpv-show fl (list "[x]" "[y]"))))
 
 (provide 'htprofile-view)
 ;;; htprofile-view.el ends here
