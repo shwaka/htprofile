@@ -41,19 +41,22 @@
                               :header header
                               :func func))
 
+(defun htpv-truncate-string (str length align)
+  (let* ((align-str (cl-case align
+                      ('left "-")
+                      ('right "")
+                      ('otherwise (error "invalid align parameter"))))
+         (percent-seq (format "%%%ss" (format "%s%d" align-str length))))
+    (truncate-string-to-width (format percent-seq str)
+                              length)))
 (defun htpv-get-header (format-list)
   (let ((header-whole ""))
     (dolist (format format-list)
       (let* ((length (htpv-format-length format))
              (align (htpv-format-align format))
-             (header (htpv-format-header format))
-             (percent-seq (format "%%%ss" (format "%s%d"
-                                                  (if (eq align 'left)
-                                                      "-" "")
-                                                  length))))
+             (header (htpv-format-header format)))
         (setq header-whole (concat header-whole
-                                   (truncate-string-to-width (format percent-seq header)
-                                                             length)))))
+                                   (htpv-truncate-string header length align)))))
     header-whole))
 
 (defun htpv-get-row (format-list data)
@@ -61,14 +64,9 @@
     (dolist (format format-list)
       (let* ((length (htpv-format-length format))
              (align (htpv-format-align format))
-             (func (htpv-format-func format))
-             (percent-seq (format "%%%ss" (format "%s%d"
-                                                  (if (eq align 'left)
-                                                      "-" "")
-                                                  length))))
+             (func (htpv-format-func format)))
         (setq row (concat row
-                          (truncate-string-to-width (format percent-seq (funcall func data))
-                                                    length)))))
+                          (htpv-truncate-string (funcall func data) length align)))))
     row))
 
 
