@@ -69,11 +69,23 @@
                           (htpv-truncate-string (funcall func data) length align)))))
     row))
 
+(defun htpv-get-clean-buffer (buffer-name)
+  "copied from `htprofile-get-clean-buffer'"
+  (let ((inhibit-read-only t))
+    (if (get-buffer buffer-name)
+        (with-current-buffer (get-buffer buffer-name)
+          (erase-buffer)
+          (current-buffer))
+      (with-current-buffer (get-buffer-create buffer-name)
+        (setq truncate-lines t
+              buffer-read-only t)
+        (current-buffer)))))
 
 ;;; test
 (defun htpv-test-func (data)
   (format "%s" data))
 (defun htpv-test ()
+  (interactive)
   (let* ((f1 (make-htpv-format :length 5
                                :align 'right
                                :header "hoge"
@@ -83,8 +95,13 @@
                                :header "a"
                                :func #'htpv-test-func))
          (fl (list f1 f2)))
-    (htpv-get-header fl)
-    (htpv-get-row fl "foo")))
+    (with-current-buffer (htpv-get-clean-buffer "*htpv-test*")
+      (let ((inhibit-read-only t))
+        (insert (htpv-get-header fl))
+        (insert "\n")
+        (insert (htpv-get-row fl "foo")))
+      (goto-char (point-min))
+      (display-buffer (current-buffer)))))
 
 (provide 'htprofile-view)
 ;;; htprofile-view.el ends here
