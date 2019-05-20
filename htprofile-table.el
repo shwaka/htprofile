@@ -31,6 +31,9 @@
   header width data-formatter truncation)
 
 (cl-defun htptable-make-col-format (&key header width data-formatter truncation)
+  (cl-assert (stringp header))
+  (cl-assert (integerp width))
+  (cl-assert (functionp data-formatter))
   (htptable-make-col-format--internal :header header
                                       :width width
                                       :data-formatter data-formatter

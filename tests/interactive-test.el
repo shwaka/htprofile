@@ -1,3 +1,6 @@
+(require 'htprofile-table)
+(require 'htprofile-viewer)
+
 (defun htprofile-itest-table--data-formatter (row-data)
   (format "%s" row-data))
 
@@ -21,4 +24,8 @@
 
 (defun htprofile-itest-insert-table ()
   (interactive)
-  (insert (htptable-table-to-string htprofile-itest-table)))
+  (let ((viewer (htpviewer-make-viewer :buffer-name "*hoge*"
+                                       :table htprofile-itest-table)))
+    (htpviewer-show-viewer viewer))
+  ;; (insert (htptable-table-to-string htprofile-itest-table))
+  )
