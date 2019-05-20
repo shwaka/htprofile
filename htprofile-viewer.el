@@ -55,6 +55,7 @@
   (with-current-buffer (htpviewer-get-clean-buffer viewer)
     (let ((table (htpviewer-viewer-table viewer))
           (inhibit-read-only t))
+      (insert "\n")
       (insert (htptable-table-to-string table)))
     (goto-char (point-min))
     (display-buffer (current-buffer))))

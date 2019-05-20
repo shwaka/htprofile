@@ -15,7 +15,7 @@
                             :data-formatter 'htprofile-itest-table--data-formatter))
 
 (defvar htprofile-itest-row-data-list
-  (list '(abc def ghi) 'fooo "aiueokakikukeko"))
+  (list '(abc def ghi) 'fooo 'aiueo "aiueokakikukeko"))
 
 (defvar htprofile-itest-table
   (htptable-make-table :col-format-list (list htprofile-itest-col-format1

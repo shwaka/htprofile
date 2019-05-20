@@ -39,6 +39,32 @@
                                       :data-formatter data-formatter
                                       :truncation truncation))
 
+(defvar htptable-truncate-ellipsis
+  ".")
+
+(defface htptable-truncate-ellipsis-face
+  '((t :inherit font-lock-comment-face))
+  "face for ellipsis in table")
+
+(defun htptable-normalize-string (str width &optional ellipsis-face)
+  (let* ((str-len (length str))
+         (truncated-str (truncate-string-to-width str width nil
+                                                  32 ;; charcode of space
+                                                  htptable-truncate-ellipsis)))
+    (when (and ellipsis-face
+               (> str-len width))
+      (add-face-text-property (- width (length htptable-truncate-ellipsis)) width
+                              ellipsis-face nil
+                              truncated-str))
+    truncated-str)
+  ;; (if (> (length str) width)
+  ;;     (concat (substring str 0 (- width (length htptable-truncate-indicator)))
+  ;;             htptable-truncate-indicator))
+  ;; (truncate-string-to-width (format (format "%%-%ds" width)
+  ;;                                   str)
+  ;;                           width)
+  )
+
 (defface htptable-header-face
   '((t :inverse-video t))
   "face for header")
@@ -46,9 +72,11 @@
 (defun htptable-format-header (col-format)
   (let* ((width (htptable-col-format-width col-format))
          (orig-header (htptable-col-format-header col-format))
-         (truncated-header (truncate-string-to-width (format (format "%%-%ds" width)
-                                                             orig-header)
-                                                     width)))
+         (truncated-header (htptable-normalize-string orig-header width)
+                           ;; (truncate-string-to-width (format (format "%%-%ds" width)
+                           ;;                                   orig-header)
+                           ;;                           width)
+                           ))
     truncated-header
     ;; (propertize truncated-header 'face 'htptable-header-face)
     ))
@@ -58,9 +86,11 @@
   (let* ((formatter (htptable-col-format-data-formatter col-format))
          (width (htptable-col-format-width col-format))
          (orig-str (funcall formatter row-data-list)))
-    (truncate-string-to-width (format (format "%%-%ds" width)
-                                      orig-str)
-                              width)))
+    (htptable-normalize-string orig-str width 'htptable-truncate-ellipsis-face)
+    ;; (truncate-string-to-width (format (format "%%-%ds" width)
+    ;;                                   orig-str)
+    ;;                           width)
+    ))
 
 
 ;;; table
@@ -74,8 +104,8 @@
 
 (defun htptable-table-to-string (table)
   (cl-assert (htptable-table-p table))
-  (let ((col-format-list (htptable-table-col-formats table))
-        (row-data-list (htptable-table-row-data table))
+  (let ((col-format-list (htptable-table-col-format-list table))
+        (row-data-list (htptable-table-row-data-list table))
         (result ""))
     ;; add header
     (dolist (col-format col-format-list)
@@ -83,12 +113,12 @@
             (concat result
                     (htptable-format-header col-format)
                     " ")))
+    (setq result
+          (concat result "\n"))
     (add-face-text-property 0 (length result)
                             'htptable-header-face
                             nil
                             result)
-    (setq result
-          (concat result "\n"))
     ;; add rows
     (dolist (row-data row-data-list)
       (dolist (col-format col-format-list)
