@@ -36,8 +36,8 @@
                                       :truncation truncation))
 
 (defun htptable-format-header (col-format)
-  (let* ((orig-header (htptable-col-format-header))
-         (width (htptable-col-format-width)))
+  (let* ((orig-header (htptable-col-format-header col-format))
+         (width (htptable-col-format-width col-format)))
     (truncate-string-to-width (format (format "%%-%ds" width)
                                       orig-header)
                               width)))
