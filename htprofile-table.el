@@ -26,6 +26,7 @@
 
 (require 'cl-lib)
 
+;;; column format
 (cl-defstruct (htptable-col-format (:constructor htptable-make-col-format--internal))
   header width data-formatter truncation)
 
@@ -35,28 +36,66 @@
                                       :data-formatter data-formatter
                                       :truncation truncation))
 
-(defun htptable-format-header (col-format)
-  (let* ((orig-header (htptable-col-format-header col-format))
-         (width (htptable-col-format-width col-format)))
-    (truncate-string-to-width (format (format "%%-%ds" width)
-                                      orig-header)
-                              width)))
+(defface htptable-header-face
+  '((t :inverse-video t))
+  "face for header")
 
-(defun htptable-format-cell (col-format row-data)
+(defun htptable-format-header (col-format)
+  (let* ((width (htptable-col-format-width col-format))
+         (orig-header (htptable-col-format-header col-format))
+         (truncated-header (truncate-string-to-width (format (format "%%-%ds" width)
+                                                             orig-header)
+                                                     width)))
+    truncated-header
+    ;; (propertize truncated-header 'face 'htptable-header-face)
+    ))
+
+(defun htptable-format-cell (col-format row-data-list)
+  (cl-assert (htptable-col-format-p col-format))
   (let* ((formatter (htptable-col-format-data-formatter col-format))
          (width (htptable-col-format-width col-format))
-         (orig-str (funcall formatter row-data)))
+         (orig-str (funcall formatter row-data-list)))
     (truncate-string-to-width (format (format "%%-%ds" width)
                                       orig-str)
                               width)))
 
-(cl-defstruct (htptable-table (:constructor htptable-make-table--internal))
-  col-formats
-  row-data)
 
-(cl-defun htptable-make-table (&key col-formats row-data)
-  (htptable-make-table--internal :col-formats col-formats
-                                 :row-data row-data))
+;;; table
+(cl-defstruct (htptable-table (:constructor htptable-make-table--internal))
+  col-format-list
+  row-data-list)
+
+(cl-defun htptable-make-table (&key col-format-list row-data-list)
+  (htptable-make-table--internal :col-format-list col-format-list
+                                 :row-data-list row-data-list))
+
+(defun htptable-table-to-string (table)
+  (cl-assert (htptable-table-p table))
+  (let ((col-format-list (htptable-table-col-formats table))
+        (row-data-list (htptable-table-row-data table))
+        (result ""))
+    ;; add header
+    (dolist (col-format col-format-list)
+      (setq result
+            (concat result
+                    (htptable-format-header col-format)
+                    " ")))
+    (add-face-text-property 0 (length result)
+                            'htptable-header-face
+                            nil
+                            result)
+    (setq result
+          (concat result "\n"))
+    ;; add rows
+    (dolist (row-data row-data-list)
+      (dolist (col-format col-format-list)
+        (setq result
+              (concat result
+                      (htptable-format-cell col-format row-data)
+                      " ")))
+      (setq result
+            (concat result "\n")))
+    result))
 
 
 (provide 'htprofile-table)
