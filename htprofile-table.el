@@ -58,14 +58,7 @@
         (add-face-text-property (- width (length htptable-truncate-ellipsis)) width
                                 ellipsis-face nil
                                 truncated-str))
-      truncated-str))                       ; only padding
-  ;; (if (> (length str) width)
-  ;;     (concat (substring str 0 (- width (length htptable-truncate-indicator)))
-  ;;             htptable-truncate-indicator))
-  ;; (truncate-string-to-width (format (format "%%-%ds" width)
-  ;;                                   str)
-  ;;                           width)
-  )
+      truncated-str)))
 
 (defface htptable-header-face
   '((t :inverse-video t))
@@ -73,17 +66,8 @@
 
 (defun htptable-format-header (col-format)
   (let* ((width (htptable-col-format-width col-format))
-         (orig-header (htptable-col-format-header col-format))
-         ;; (header (if (htptable-col-format-truncation col-format)
-         ;;             (htptable-normalize-string orig-header width)
-         ;;           orig-header)
-         ;;         ;; (truncate-string-to-width (format (format "%%-%ds" width)
-         ;;         ;;                                   orig-header)
-         ;;         ;;                           width)
-         ;;         )
-         )
+         (orig-header (htptable-col-format-header col-format)))
     (htptable-normalize-string orig-header width)
-    ;; (propertize header 'face 'htptable-header-face)
     ))
 
 (defun htptable-format-cell (col-format row-data-list)
@@ -91,12 +75,7 @@
   (let* ((formatter (htptable-col-format-data-formatter col-format))
          (width (htptable-col-format-width col-format))
          (orig-str (funcall formatter row-data-list)))
-    (htptable-normalize-string orig-str width 'htptable-truncate-ellipsis-face)
-    ;; (htptable-normalize-string orig-str width 'htptable-truncate-ellipsis-face)
-    ;; (truncate-string-to-width (format (format "%%-%ds" width)
-    ;;                                   orig-str)
-    ;;                           width)
-    ))
+    (htptable-normalize-string orig-str width 'htptable-truncate-ellipsis-face)))
 
 
 ;;; table
