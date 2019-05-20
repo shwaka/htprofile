@@ -28,16 +28,16 @@
 
 ;;; column format
 (cl-defstruct (htptable-col-format (:constructor htptable-make-col-format--internal))
-  header width data-formatter no-truncation)
+  header width data-formatter)
 
-(cl-defun htptable-make-col-format (&key header width data-formatter no-truncation)
+(cl-defun htptable-make-col-format (&key header width data-formatter)
   (cl-assert (stringp header))
-  (cl-assert (integerp width))
+  (cl-assert (or (integerp width)
+                 (null width)))
   (cl-assert (functionp data-formatter))
   (htptable-make-col-format--internal :header header
                                       :width width
-                                      :data-formatter data-formatter
-                                      :no-truncation no-truncation))
+                                      :data-formatter data-formatter))
 
 (defvar htptable-truncate-ellipsis
   ".")
@@ -46,10 +46,9 @@
   '((t :inherit font-lock-comment-face))
   "face for ellipsis in table")
 
-(defun htptable-normalize-string (str width no-truncation &optional ellipsis-face)
-  (if no-truncation
-      (format (format "%%-%ds" width)
-              str)
+(defun htptable-normalize-string (str width &optional ellipsis-face)
+  (if (null width)
+      str
     (let* ((str-len (length str))
            (truncated-str (truncate-string-to-width str width nil
                                                     32 ;; charcode of space
@@ -83,7 +82,7 @@
          ;;         ;;                           width)
          ;;         )
          )
-    (htptable-normalize-string orig-header width (htptable-col-format-no-truncation col-format))
+    (htptable-normalize-string orig-header width)
     ;; (propertize header 'face 'htptable-header-face)
     ))
 
@@ -92,8 +91,7 @@
   (let* ((formatter (htptable-col-format-data-formatter col-format))
          (width (htptable-col-format-width col-format))
          (orig-str (funcall formatter row-data-list)))
-    (htptable-normalize-string orig-str width (htptable-col-format-no-truncation col-format)
-                               'htptable-truncate-ellipsis-face)
+    (htptable-normalize-string orig-str width 'htptable-truncate-ellipsis-face)
     ;; (htptable-normalize-string orig-str width 'htptable-truncate-ellipsis-face)
     ;; (truncate-string-to-width (format (format "%%-%ds" width)
     ;;                                   orig-str)

@@ -14,12 +14,19 @@
                             :width 5
                             :data-formatter 'htprofile-itest-table--data-formatter))
 
+(defvar htprofile-itest-col-format3
+  (htptable-make-col-format :header "piyo"
+                            :width nil
+                            :data-formatter 'htprofile-itest-table--data-formatter))
+
 (defvar htprofile-itest-row-data-list
-  (list '(abc def ghi) 'fooo 'aiueo "aiueokakikukeko"))
+  (list '(abc def ghi) 'fooo 'aiueo
+        "aiueokakikukekosasisuseso"))
 
 (defvar htprofile-itest-table
   (htptable-make-table :col-format-list (list htprofile-itest-col-format1
-                                              htprofile-itest-col-format2)
+                                              htprofile-itest-col-format2
+                                              htprofile-itest-col-format3)
                        :row-data-list htprofile-itest-row-data-list))
 
 (defun htprofile-itest-insert-table ()
