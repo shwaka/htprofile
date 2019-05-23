@@ -326,6 +326,27 @@ The value should be one of the following:
               type
               idle-time)
     (symbol-name type)))
+(defvar htprofile-stat-col-format-list
+  (list
+   (htptable-make-col-format
+    :header "type" :width 20 :align 'left
+    :data-formatter (lambda (data) (htprofile-get-type-str (htprofile-stat-type data)
+                                                           (htprofile-stat-idle-time data))))
+   (htptable-make-col-format
+    :header "count" :width 5 :align 'right
+    :data-formatter (lambda (data) (htprofile-stat-len data)))
+   (htptable-make-col-format
+    :header "total" :width (htprofile-get-float-width) :align 'right
+    :data-formatter (lambda (data) (htprofile-float-to-str (htprofile-stat-total-time data))))
+   (htptable-make-col-format
+    :header "max" :width (htprofile-get-float-width) :align 'right
+    :data-formatter (lambda (data) (htprofile-float-to-str (htprofile-stat-max-time data))))
+   (htptable-make-col-format
+    :header "ave" :width (htprofile-get-float-width) :align 'right
+    :data-formatter (lambda (data) (htprofile-float-to-str (htprofile-stat-average-time data))))
+   (htptable-make-col-format
+    :header "func" :width nil
+    :data-formatter (lambda (data) (htprofile-maybe-remove-newline (htprofile-stat-func data))))))
 (defun htprofile-stat-to-str (stat)
   (let* ((type (htprofile-stat-type stat))
          (idle-time (htprofile-stat-idle-time stat)))
@@ -399,20 +420,36 @@ The value should be one of the following:
         (current-buffer)))))
 (defvar htprofile-sort-by 'max-time)
 (defvar htprofile-statistics-buffer "*htprofile-stat*")
+;; (defun htprofile-update-statistics ()
+;;   (with-current-buffer (htprofile-get-clean-buffer htprofile-statistics-buffer)
+;;     (save-excursion
+;;       (let (stat-list
+;;             (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
+;;         (dolist (data-list-with-key (htprofile-split-data-list-by-keys))
+;;           (let ((key (car data-list-with-key))
+;;                 (data-list (cdr data-list-with-key)))
+;;             (push (htprofile-compute-summary key data-list) stat-list)))
+;;         (setq stat-list (cl-sort stat-list '> :key sort-key-func))
+;;         (let ((inhibit-read-only t))
+;;           (htprofile-insert-stat-header)
+;;           (dolist (stat stat-list)
+;;             (insert (htprofile-stat-to-str stat))))))))
 (defun htprofile-update-statistics ()
-  (with-current-buffer (htprofile-get-clean-buffer htprofile-statistics-buffer)
-    (save-excursion
-      (let (stat-list
-            (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
-        (dolist (data-list-with-key (htprofile-split-data-list-by-keys))
-          (let ((key (car data-list-with-key))
-                (data-list (cdr data-list-with-key)))
-            (push (htprofile-compute-summary key data-list) stat-list)))
-        (setq stat-list (cl-sort stat-list '> :key sort-key-func))
-        (let ((inhibit-read-only t))
-          (htprofile-insert-stat-header)
-          (dolist (stat stat-list)
-            (insert (htprofile-stat-to-str stat))))))))
+  (let ((stat-list ())
+        (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
+    (dolist (data-list-with-key (htprofile-split-data-list-by-keys))
+      (let ((key (car data-list-with-key))
+            (data-list (cdr data-list-with-key)))
+        (push (htprofile-compute-summary key data-list) stat-list)))
+    (setq stat-list (cl-sort stat-list '> :key sort-key-func))
+    (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-statistics-buffer
+                                          :variable-list ()
+                                          :update-func 'htprofile-update-statistics))
+           (table (htptable-make-table
+                   :col-format-list htprofile-stat-col-format-list
+                   :row-data-list stat-list)))
+      (htpviewer-update-viewer viewer table)
+      (htpviewer-show-viewer viewer))))
 (defun htprofile-show-statistics ()
   "show data in a buffer *htprofile-stat*"
   (interactive)
