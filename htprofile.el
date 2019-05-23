@@ -77,28 +77,28 @@
       (add-to-list 'htprofile--advice-list (cons func advice-name)))))
 
 ;;; Handle modification of variables
-(defvar htprofile-auto-update t)
+;; (defvar htprofile-auto-update t)
 
-(defvar htprofile-textfield-for-modification nil)
-(make-variable-buffer-local 'htprofile-textfield-for-modification)
+;; (defvar htprofile-textfield-for-modification nil)
+;; (make-variable-buffer-local 'htprofile-textfield-for-modification)
 
-(defun htprofile-insert-tfm ()
-  (let ((tfm (make-htpwidget-textfield :text ""
-                                       :name 'htprofile-textfield-for-modification)))
-    (setq htprofile-textfield-for-modification tfm)
-    (htpwidget-insert-textfield tfm)
-    (htprofile-make-tfm-uptodate)))
+;; (defun htprofile-insert-tfm ()
+;;   (let ((tfm (make-htpwidget-textfield :text ""
+;;                                        :name 'htprofile-textfield-for-modification)))
+;;     (setq htprofile-textfield-for-modification tfm)
+;;     (htpwidget-insert-textfield tfm)
+;;     (htprofile-make-tfm-uptodate)))
 
-(defun htprofile-make-tfm-modified ()
-  (let ((tfm htprofile-textfield-for-modification))
-    (when tfm
-      (htpwidget-update-textfield tfm (propertize " modified"
-                                                  'face 'warning)))))
+;; (defun htprofile-make-tfm-modified ()
+;;   (let ((tfm htprofile-textfield-for-modification))
+;;     (when tfm
+;;       (htpwidget-update-textfield tfm (propertize " modified"
+;;                                                   'face 'warning)))))
 
-(defun htprofile-make-tfm-uptodate ()
-  (let ((tfm htprofile-textfield-for-modification))
-    (when tfm
-      (htpwidget-update-textfield tfm " "))))
+;; (defun htprofile-make-tfm-uptodate ()
+;;   (let ((tfm htprofile-textfield-for-modification))
+;;     (when tfm
+;;       (htpwidget-update-textfield tfm " "))))
 
 ;; (defvar htprofile--buffer-update-function nil)
 ;; (make-variable-buffer-local 'htprofile--buffer-update-function)
