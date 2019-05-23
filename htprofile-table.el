@@ -31,14 +31,13 @@
   header width data-formatter align)
 
 (cl-defun htptable-make-col-format (&key header width data-formatter align)
-  (cl-assert (stringp header))
-  (cl-assert (or (integerp width)
-                 (null width)))
-  (cl-assert (functionp data-formatter))
+  (cl-check-type header string) ;; (cl-assert (stringp header))
+  (cl-check-type width (or integer null)) ;; (cl-assert (or (integerp width) (null width)))
+  (cl-check-type data-formatter function) ;; (cl-assert (functionp data-formatter))
   (unless align
     (setq align 'left))
-  (cl-assert (and (symbolp align)
-                  (memq align '(left right))))
+  (cl-check-type align symbol) ;; (cl-assert (and (symbolp align) (memq align '(left right))))
+  (cl-assert (memq align '(left right)))
   (htptable-make-col-format--internal :header header
                                       :width width
                                       :data-formatter data-formatter
