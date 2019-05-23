@@ -461,8 +461,14 @@ The value should be one of the following:
     :data-formatter (lambda (data) (htprofile-maybe-remove-newline
                                     (htprofile-data-func-name data)))))
   "list of col-format for log")
+(defvar htprofile-log-variable-list
+  '((:symbol htprofile--show-log-from :type integer)
+    (:symbol htprofile--show-log-to :type integer)
+    (:symbol htprofile-min-elapsed-time :type integer))
+  "list of variables which are used in log")
 (defun htprofile-update-log ()
-  (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer))
+  (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer
+                                        :variable-list htprofile-log-variable-list))
          (table (htptable-make-table
                  :col-format-list htprofile-log-col-format-list
                  :row-data-list (htprofile-get-data-list htprofile--show-log-from

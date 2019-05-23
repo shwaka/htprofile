@@ -26,14 +26,18 @@
 
 (require 'cl-lib)
 (require 'htprofile-table)
+(require 'htprofile-widgets)
 
 (cl-defstruct (htpviewer-viewer (:constructor htpviewer-make-viewer--internal))
-  buffer-name)
+  buffer-name variable-list)
 
-(cl-defun htpviewer-make-viewer (&key buffer-name)
+(cl-defun htpviewer-make-viewer (&key buffer-name variable-list)
+  "VARIABLE-LIST is a list of plists such as (:symbol my-variable :type integer)"
   (cl-check-type buffer-name string)
   ;; (cl-assert (htptable-table-p table))
-  (htpviewer-make-viewer--internal :buffer-name buffer-name))
+  (cl-check-type variable-list list)
+  (htpviewer-make-viewer--internal :buffer-name buffer-name
+                                   :variable-list variable-list))
 
 (defun htpviewer-get-buffer (viewer)
   (let ((buffer-name (htpviewer-viewer-buffer-name viewer)))
@@ -53,6 +57,8 @@
   (with-current-buffer (htpviewer-get-clean-buffer viewer)
     (let (;; (table (htpviewer-viewer-table viewer))
           (inhibit-read-only t))
+      (dolist (variable-data (htpviewer-viewer-variable-list viewer))
+        (insert (format "%s\n" (plist-get variable-data :symbol))))
       (insert "\n")
       (insert (htptable-table-to-string table)))
     ;; (goto-char (point-min))
