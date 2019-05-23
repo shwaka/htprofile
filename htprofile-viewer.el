@@ -58,13 +58,16 @@
 
 (defun htpviewer-update-viewer (viewer table)
   (with-current-buffer (htpviewer-get-clean-buffer viewer)
-    (let (;; (table (htpviewer-viewer-table viewer))
+    (let ((update-func (htpviewer-viewer-update-func viewer))
           (inhibit-read-only t))
+      (insert-button "update"
+                     'action (lambda (button) (funcall update-func))
+                     'follow-link t)
+      (insert "\n")
       (dolist (variable-data (htpviewer-viewer-variable-list viewer))
         (let* ((symbol (plist-get variable-data :symbol))
                (type (plist-get variable-data :type))
                (description (plist-get variable-data :description))
-               (update-func (htpviewer-viewer-update-func viewer))
                (variable (make-htpwidget-variable :symbol symbol
                                                   :type type
                                                   :after-update-hook update-func)))
