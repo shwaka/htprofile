@@ -38,8 +38,7 @@
 
 (defun htprofile-itest-show-table ()
   (interactive)
-  (let ((viewer (htpviewer-make-viewer :buffer-name "*hoge*"
-                                       :table htprofile-itest-table)))
-    (htpviewer-show-viewer viewer))
+  (let ((viewer (htpviewer-make-viewer :buffer-name "*hoge*")))
+    (htpviewer-show-viewer viewer htprofile-itest-table))
   ;; (insert (htptable-table-to-string htprofile-itest-table))
   )

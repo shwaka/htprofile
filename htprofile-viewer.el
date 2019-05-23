@@ -28,14 +28,12 @@
 (require 'htprofile-table)
 
 (cl-defstruct (htpviewer-viewer (:constructor htpviewer-make-viewer--internal))
-  buffer-name
-  table)
+  buffer-name)
 
-(cl-defun htpviewer-make-viewer (&key buffer-name table)
-  (cl-assert (stringp buffer-name))
-  (cl-assert (htptable-table-p table))
-  (htpviewer-make-viewer--internal :buffer-name buffer-name
-                                   :table table))
+(cl-defun htpviewer-make-viewer (&key buffer-name)
+  (cl-check-type buffer-name string)
+  ;; (cl-assert (htptable-table-p table))
+  (htpviewer-make-viewer--internal :buffer-name buffer-name))
 
 (defun htpviewer-get-buffer (viewer)
   (let ((buffer-name (htpviewer-viewer-buffer-name viewer)))
@@ -51,9 +49,9 @@
       (erase-buffer))
     (current-buffer)))
 
-(defun htpviewer-show-viewer (viewer)
+(defun htpviewer-show-viewer (viewer table)
   (with-current-buffer (htpviewer-get-clean-buffer viewer)
-    (let ((table (htpviewer-viewer-table viewer))
+    (let (;; (table (htpviewer-viewer-table viewer))
           (inhibit-read-only t))
       (insert "\n")
       (insert (htptable-table-to-string table)))

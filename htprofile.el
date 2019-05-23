@@ -29,6 +29,8 @@
 (require 'cl-lib)
 (require 'seq)
 (require 'htprofile-widgets)
+(require 'htprofile-viewer)
+(require 'htprofile-table)
 
 (defvar htprofile-data-list ()
   "save data to this variable")
@@ -138,15 +140,15 @@
                                    :id htprofile--data-id
                                    :current-time (current-time))))
 (defvar htprofile-data-id-digit 6)
-(defun htprofile-data-to-str (data)
-  (format "%s %s  %-20s %s %s"
-          (format (format "%%%dd" htprofile-data-id-digit)
-                  (htprofile-data-id data))
-          (format-time-string "%H:%M:%S" (htprofile-data-current-time data))
-          (htprofile-get-type-str (htprofile-data-type data)
-                                  (htprofile-data-idle-time data))
-          (htprofile-float-to-str (float-time (htprofile-data-elapsed-time data)))
-          (htprofile-maybe-remove-newline (htprofile-data-func-name data))))
+;; (defun htprofile-data-to-str (data)
+;;   (format "%s %s  %-20s %s %s"
+;;           (format (format "%%%dd" htprofile-data-id-digit)
+;;                   (htprofile-data-id data))
+;;           (format-time-string "%H:%M:%S" (htprofile-data-current-time data))
+;;           (htprofile-get-type-str (htprofile-data-type data)
+;;                                   (htprofile-data-idle-time data))
+;;           (htprofile-float-to-str (float-time (htprofile-data-elapsed-time data)))
+;;           (htprofile-maybe-remove-newline (htprofile-data-func-name data))))
 (defun htprofile-insert-update-button ()
   (let ((text "update"))
     (insert-button text
@@ -157,43 +159,43 @@
                    'follow-link t)
     (htprofile-insert-tfm)
     (insert "\n")))
-(defun htprofile-insert-data-header ()
-  "insert header"
-  (htprofile-insert-update-button)
-  (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
-                                           :type 'integer
-                                           :after-update-hook 'htprofile--variable-after-update-hook))
-        (to-var (make-htpwidget-variable :symbol 'htprofile--show-log-to
-                                         :type 'integer
-                                         :after-update-hook 'htprofile--variable-after-update-hook)))
-    (insert (format "showing (%s): " (htprofile-data-list-length)))
-    (htpwidget-insert-variable-value from-var)
-    (insert "--")
-    (htpwidget-insert-variable-value to-var)
-    (insert " ")
-    (htpwidget-insert-evbutton "edit" (list from-var to-var) 'htprofile-handle-detected-update)
-    (insert "\n"))
-  ;; (insert (format "total: %s\n" (htprofile-data-list-length)))
-  (when (eq htprofile-data-filter-function 'htprofile-default-filter-function)
-    (let ((min-time-var (make-htpwidget-variable :symbol 'htprofile-min-elapsed-time
-                                                 :type 'integer
-                                                 :after-update-hook 'htprofile--variable-after-update-hook)))
-      (insert "minimum elapsed time: ")
-      (htpwidget-insert-variable-value min-time-var)
-      (insert " ")
-      (htpwidget-insert-evbutton "edit" (list min-time-var) 'htprofile-handle-detected-update)
-      (insert "\n")))
-  (let* ((description (format "elapsed time is shown as: %s\n"
-                              (htprofile-get-float-format-description)))
-         (header-plain (format "%s %s  %s %s %s\n"
-                               (format (format "%%-%ds" htprofile-data-id-digit) "id")
-                               (format "%-8s" "current")
-                               (format "%-20s" "type")
-                               (htprofile-format "elapsed" (htprofile-get-float-width))
-                               "func"))
-         (header (propertize header-plain
-                             'face '(:inverse-video t))))
-    (insert (format "%s\n%s" description header))))
+;; (defun htprofile-insert-data-header ()
+;;   "insert header"
+;;   (htprofile-insert-update-button)
+;;   (let ((from-var (make-htpwidget-variable :symbol 'htprofile--show-log-from
+;;                                            :type 'integer
+;;                                            :after-update-hook 'htprofile--variable-after-update-hook))
+;;         (to-var (make-htpwidget-variable :symbol 'htprofile--show-log-to
+;;                                          :type 'integer
+;;                                          :after-update-hook 'htprofile--variable-after-update-hook)))
+;;     (insert (format "showing (%s): " (htprofile-data-list-length)))
+;;     (htpwidget-insert-variable-value from-var)
+;;     (insert "--")
+;;     (htpwidget-insert-variable-value to-var)
+;;     (insert " ")
+;;     (htpwidget-insert-evbutton "edit" (list from-var to-var) 'htprofile-handle-detected-update)
+;;     (insert "\n"))
+;;   ;; (insert (format "total: %s\n" (htprofile-data-list-length)))
+;;   (when (eq htprofile-data-filter-function 'htprofile-default-filter-function)
+;;     (let ((min-time-var (make-htpwidget-variable :symbol 'htprofile-min-elapsed-time
+;;                                                  :type 'integer
+;;                                                  :after-update-hook 'htprofile--variable-after-update-hook)))
+;;       (insert "minimum elapsed time: ")
+;;       (htpwidget-insert-variable-value min-time-var)
+;;       (insert " ")
+;;       (htpwidget-insert-evbutton "edit" (list min-time-var) 'htprofile-handle-detected-update)
+;;       (insert "\n")))
+;;   (let* ((description (format "elapsed time is shown as: %s\n"
+;;                               (htprofile-get-float-format-description)))
+;;          (header-plain (format "%s %s  %s %s %s\n"
+;;                                (format (format "%%-%ds" htprofile-data-id-digit) "id")
+;;                                (format "%-8s" "current")
+;;                                (format "%-20s" "type")
+;;                                (htprofile-format "elapsed" (htprofile-get-float-width))
+;;                                "func"))
+;;          (header (propertize header-plain
+;;                              'face '(:inverse-video t))))
+;;     (insert (format "%s\n%s" description header))))
 
 (cl-defstruct htprofile-key
   type func-name idle-time)
@@ -425,15 +427,45 @@ The value should be one of the following:
 (defvar htprofile--show-log-from)
 (defvar htprofile--show-log-to)
 (defvar htprofile-log-buffer "*htprofile-log*")
+;; (defun htprofile-update-log ()
+;;   (with-current-buffer (htprofile-get-clean-buffer htprofile-log-buffer)
+;;     (save-excursion
+;;       (let ((inhibit-read-only t))
+;;         (htprofile-insert-data-header)
+;;         (dolist (data (htprofile-get-data-list htprofile--show-log-from
+;;                                                htprofile--show-log-to
+;;                                                htprofile-data-filter-function))
+;;           (insert (format "%s\n" (htprofile-data-to-str data))))))))
 (defun htprofile-update-log ()
-  (with-current-buffer (htprofile-get-clean-buffer htprofile-log-buffer)
-    (save-excursion
-      (let ((inhibit-read-only t))
-        (htprofile-insert-data-header)
-        (dolist (data (htprofile-get-data-list htprofile--show-log-from
-                                               htprofile--show-log-to
-                                               htprofile-data-filter-function))
-          (insert (format "%s\n" (htprofile-data-to-str data))))))))
+  (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer))
+         (col-id (htptable-make-col-format
+                  :header "id" :width htprofile-data-id-digit :align 'right
+                  :data-formatter (lambda (data) (htprofile-data-id data))))
+         (col-current (htptable-make-col-format
+                       :header "current" :width 8 :align 'left
+                       :data-formatter (lambda (data) (format-time-string
+                                                       "%H:%M:%S"
+                                                       (htprofile-data-current-time data)))))
+         (col-type (htptable-make-col-format
+                    :header "type" :width 20 :align 'left
+                    :data-formatter (lambda (data) (htprofile-get-type-str
+                                                    (htprofile-data-type data)
+                                                    (htprofile-data-idle-time data)))))
+         (col-elapsed (htptable-make-col-format
+                       :header "elapsed" :width (htprofile-get-float-width) :align 'left
+                       :data-formatter (lambda (data) (htprofile-float-to-str
+                                                       (float-time
+                                                        (htprofile-data-elapsed-time data))))))
+         (col-func (htptable-make-col-format
+                    :header "func" :width nil
+                    :data-formatter (lambda (data) (htprofile-maybe-remove-newline
+                                                    (htprofile-data-func-name data)))))
+         (table (htptable-make-table
+                 :col-format-list (list col-id col-current col-type col-elapsed col-func)
+                 :row-data-list (htprofile-get-data-list htprofile--show-log-from
+                                                         htprofile--show-log-to
+                                                         htprofile-data-filter-function))))
+    (htpviewer-show-viewer viewer table)))
 (defun htprofile-show-log ()
   "show data in a buffer *htprofile-log*"
   (interactive)
