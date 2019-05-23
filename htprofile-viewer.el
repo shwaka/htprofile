@@ -75,7 +75,7 @@
           ;; (insert ": ")
           ;; (htpwidget-insert-variable-value variable)
           ;; (insert " ")
-          (htpwidget-insert-evbutton "edit" (list variable) 'nil)
+          (htpwidget-insert-evbutton "edit" (list variable))
           (insert "\n"))
         ;; (insert (format "%s\n" (plist-get variable-data :symbol)))
         )

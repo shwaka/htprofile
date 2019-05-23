@@ -100,22 +100,22 @@
     (when tfm
       (htpwidget-update-textfield tfm " "))))
 
-(defvar htprofile--buffer-update-function nil)
-(make-variable-buffer-local 'htprofile--buffer-update-function)
-(defvar htprofile--update-detected nil)
-(make-variable-buffer-local 'htprofile--update-detected)
-(defun htprofile--variable-after-update-hook ()
-  (setq htprofile--update-detected t))
+;; (defvar htprofile--buffer-update-function nil)
+;; (make-variable-buffer-local 'htprofile--buffer-update-function)
+;; (defvar htprofile--update-detected nil)
+;; (make-variable-buffer-local 'htprofile--update-detected)
+;; (defun htprofile--variable-after-update-hook ()
+;;   (setq htprofile--update-detected t))
 
-(defun htprofile-handle-detected-update ()
-  (when htprofile--update-detected
-    (if htprofile-auto-update
-        (let ((pt (point)))
-          ;; save-excursion doesn't work because of erase-buffer in the update function
-          (funcall htprofile--buffer-update-function)
-          (goto-char pt))
-      (htprofile-make-tfm-modified)))
-  (setq htprofile--update-detected nil))
+;; (defun htprofile-handle-detected-update ()
+;;   (when htprofile--update-detected
+;;     (if htprofile-auto-update
+;;         (let ((pt (point)))
+;;           ;; save-excursion doesn't work because of erase-buffer in the update function
+;;           (funcall htprofile--buffer-update-function)
+;;           (goto-char pt))
+;;       (htprofile-make-tfm-modified)))
+;;   (setq htprofile--update-detected nil))
 
 ;;; profiler
 (defvar htprofile-remove-newline t
@@ -149,16 +149,16 @@
 ;;                                   (htprofile-data-idle-time data))
 ;;           (htprofile-float-to-str (float-time (htprofile-data-elapsed-time data)))
 ;;           (htprofile-maybe-remove-newline (htprofile-data-func-name data))))
-(defun htprofile-insert-update-button ()
-  (let ((text "update"))
-    (insert-button text
-                   'action (lambda (button)
-                             (funcall htprofile--buffer-update-function)
-                             (save-excursion
-                               (htprofile-make-tfm-uptodate)))
-                   'follow-link t)
-    (htprofile-insert-tfm)
-    (insert "\n")))
+;; (defun htprofile-insert-update-button ()
+;;   (let ((text "update"))
+;;     (insert-button text
+;;                    'action (lambda (button)
+;;                              (funcall htprofile--buffer-update-function)
+;;                              (save-excursion
+;;                                (htprofile-make-tfm-uptodate)))
+;;                    'follow-link t)
+;;     (htprofile-insert-tfm)
+;;     (insert "\n")))
 ;; (defun htprofile-insert-data-header ()
 ;;   "insert header"
 ;;   (htprofile-insert-update-button)
@@ -339,17 +339,17 @@ The value should be one of the following:
             (htprofile-maybe-remove-newline (htprofile-stat-func stat)))))
 (defun htprofile-insert-stat-header ()
   "insert header"
-  (htprofile-insert-update-button)
+  ;; (htprofile-insert-update-button)
   (insert (format "total-time, max-time, average-time are shown as: %s\n"
                   (htprofile-get-float-format-description)))
   (let ((sort-by-var (make-htpwidget-variable :symbol 'htprofile-sort-by
                                               :type 'symbol
-                                              :after-update-hook 'htprofile--variable-after-update-hook
+                                              :after-update-hook 'htprofile-update-statistics
                                               :candidates '(total-time max-time average-time))))
     (insert "sort by: ")
     (htpwidget-insert-variable-value sort-by-var)
     (insert " ")
-    (htpwidget-insert-evbutton "edit" (list sort-by-var) 'htprofile-handle-detected-update)
+    (htpwidget-insert-evbutton "edit" (list sort-by-var))
     (insert "\n"))
   (insert "\n")
   (let* ((header-plain (format "%s %s %s %s %s %s\n"
@@ -418,7 +418,7 @@ The value should be one of the following:
   (interactive)
   (htprofile-update-statistics)
   (with-current-buffer (get-buffer htprofile-statistics-buffer)
-    (setq htprofile--buffer-update-function 'htprofile-update-statistics)
+    ;; (setq htprofile--buffer-update-function 'htprofile-update-statistics)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
 (defvar htprofile-max-log
@@ -485,7 +485,7 @@ The value should be one of the following:
           htprofile--show-log-to len))
   (htprofile-update-log)
   (with-current-buffer (get-buffer htprofile-log-buffer)
-    (setq htprofile--buffer-update-function 'htprofile-update-log)
+    ;; (setq htprofile--buffer-update-function 'htprofile-update-log)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
 
