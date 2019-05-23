@@ -442,7 +442,7 @@ The value should be one of the following:
                   :header "id" :width htprofile-data-id-digit :align 'right
                   :data-formatter (lambda (data) (htprofile-data-id data))))
          (col-current (htptable-make-col-format
-                       :header "current" :width 8 :align 'left
+                       :header "current" :width 9 :align 'left
                        :data-formatter (lambda (data) (format-time-string
                                                        "%H:%M:%S"
                                                        (htprofile-data-current-time data)))))
@@ -452,7 +452,7 @@ The value should be one of the following:
                                                     (htprofile-data-type data)
                                                     (htprofile-data-idle-time data)))))
          (col-elapsed (htptable-make-col-format
-                       :header "elapsed" :width (htprofile-get-float-width) :align 'left
+                       :header "elapse" :width (htprofile-get-float-width) :align 'left
                        :data-formatter (lambda (data) (htprofile-float-to-str
                                                        (float-time
                                                         (htprofile-data-elapsed-time data))))))
