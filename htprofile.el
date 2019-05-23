@@ -347,42 +347,42 @@ The value should be one of the following:
    (htptable-make-col-format
     :header "func" :width nil
     :data-formatter (lambda (data) (htprofile-maybe-remove-newline (htprofile-stat-func data))))))
-(defun htprofile-stat-to-str (stat)
-  (let* ((type (htprofile-stat-type stat))
-         (idle-time (htprofile-stat-idle-time stat)))
-    (format "%s %s %s %s %s %s\n"
-            (htprofile-format (htprofile-get-type-str type idle-time)
-                              20)
-            (format "%5s" (htprofile-stat-len stat))
-            (htprofile-float-to-str (htprofile-stat-total-time stat))
-            (htprofile-float-to-str (htprofile-stat-max-time stat))
-            (htprofile-float-to-str (htprofile-stat-average-time stat))
-            (htprofile-maybe-remove-newline (htprofile-stat-func stat)))))
-(defun htprofile-insert-stat-header ()
-  "insert header"
-  ;; (htprofile-insert-update-button)
-  (insert (format "total-time, max-time, average-time are shown as: %s\n"
-                  (htprofile-get-float-format-description)))
-  (let ((sort-by-var (make-htpwidget-variable :symbol 'htprofile-sort-by
-                                              :type 'symbol
-                                              :after-update-hook 'htprofile-update-statistics
-                                              :candidates '(total-time max-time average-time))))
-    (insert "sort by: ")
-    (htpwidget-insert-variable-value sort-by-var)
-    (insert " ")
-    (htpwidget-insert-evbutton "edit" (list sort-by-var))
-    (insert "\n"))
-  (insert "\n")
-  (let* ((header-plain (format "%s %s %s %s %s %s\n"
-                               (format "%-20s" "type")
-                               (format "%-5s" "count")
-                               (htprofile-format "total" (htprofile-get-float-width))
-                               (htprofile-format "max" (htprofile-get-float-width))
-                               (htprofile-format "average" (htprofile-get-float-width))
-                               "func"))
-         (header (propertize header-plain
-                             'face '(:inverse-video t))))
-    (insert header)))
+;; (defun htprofile-stat-to-str (stat)
+;;   (let* ((type (htprofile-stat-type stat))
+;;          (idle-time (htprofile-stat-idle-time stat)))
+;;     (format "%s %s %s %s %s %s\n"
+;;             (htprofile-format (htprofile-get-type-str type idle-time)
+;;                               20)
+;;             (format "%5s" (htprofile-stat-len stat))
+;;             (htprofile-float-to-str (htprofile-stat-total-time stat))
+;;             (htprofile-float-to-str (htprofile-stat-max-time stat))
+;;             (htprofile-float-to-str (htprofile-stat-average-time stat))
+;;             (htprofile-maybe-remove-newline (htprofile-stat-func stat)))))
+;; (defun htprofile-insert-stat-header ()
+;;   "insert header"
+;;   ;; (htprofile-insert-update-button)
+;;   (insert (format "total-time, max-time, average-time are shown as: %s\n"
+;;                   (htprofile-get-float-format-description)))
+;;   (let ((sort-by-var (make-htpwidget-variable :symbol 'htprofile-sort-by
+;;                                               :type 'symbol
+;;                                               :after-update-hook 'htprofile-update-statistics
+;;                                               :candidates '(total-time max-time average-time))))
+;;     (insert "sort by: ")
+;;     (htpwidget-insert-variable-value sort-by-var)
+;;     (insert " ")
+;;     (htpwidget-insert-evbutton "edit" (list sort-by-var))
+;;     (insert "\n"))
+;;   (insert "\n")
+;;   (let* ((header-plain (format "%s %s %s %s %s %s\n"
+;;                                (format "%-20s" "type")
+;;                                (format "%-5s" "count")
+;;                                (htprofile-format "total" (htprofile-get-float-width))
+;;                                (htprofile-format "max" (htprofile-get-float-width))
+;;                                (htprofile-format "average" (htprofile-get-float-width))
+;;                                "func"))
+;;          (header (propertize header-plain
+;;                              'face '(:inverse-video t))))
+;;     (insert header)))
 
 
 ;;; interface
@@ -408,16 +408,16 @@ The value should be one of the following:
   (when (called-interactively-p 'interactive)
     (message "htprofile stopped. Use htprofile-start to restart again.")))
 
-(defun htprofile-get-clean-buffer (buffer-name)
-  (let ((inhibit-read-only t))
-    (if (get-buffer buffer-name)
-        (with-current-buffer (get-buffer buffer-name)
-          (erase-buffer)
-          (current-buffer))
-      (with-current-buffer (get-buffer-create buffer-name)
-        (setq truncate-lines t
-              buffer-read-only t)
-        (current-buffer)))))
+;; (defun htprofile-get-clean-buffer (buffer-name)
+;;   (let ((inhibit-read-only t))
+;;     (if (get-buffer buffer-name)
+;;         (with-current-buffer (get-buffer buffer-name)
+;;           (erase-buffer)
+;;           (current-buffer))
+;;       (with-current-buffer (get-buffer-create buffer-name)
+;;         (setq truncate-lines t
+;;               buffer-read-only t)
+;;         (current-buffer)))))
 (defvar htprofile-sort-by 'max-time)
 (defvar htprofile-statistics-buffer "*htprofile-stat*")
 ;; (defun htprofile-update-statistics ()
