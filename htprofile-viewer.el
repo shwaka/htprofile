@@ -49,12 +49,18 @@
       (erase-buffer))
     (current-buffer)))
 
-(defun htpviewer-show-viewer (viewer table)
+(defun htpviewer-update-viewer (viewer table)
   (with-current-buffer (htpviewer-get-clean-buffer viewer)
     (let (;; (table (htpviewer-viewer-table viewer))
           (inhibit-read-only t))
       (insert "\n")
       (insert (htptable-table-to-string table)))
+    ;; (goto-char (point-min))
+    ;; (display-buffer (current-buffer))
+    ))
+
+(defun htpviewer-show-viewer (viewer)
+  (with-current-buffer (htpviewer-get-buffer viewer)
     (goto-char (point-min))
     (display-buffer (current-buffer))))
 

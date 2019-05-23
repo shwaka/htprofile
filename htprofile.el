@@ -465,7 +465,8 @@ The value should be one of the following:
                  :row-data-list (htprofile-get-data-list htprofile--show-log-from
                                                          htprofile--show-log-to
                                                          htprofile-data-filter-function))))
-    (htpviewer-show-viewer viewer table)))
+    (htpviewer-update-viewer viewer table)
+    (htpviewer-show-viewer viewer)))
 (defun htprofile-show-log ()
   "show data in a buffer *htprofile-log*"
   (interactive)
