@@ -36,8 +36,8 @@
     (cond
      ((null name)
       (setq name-symbol (intern (secure-hash 'md5 (format "%s:%s"
-                                            (current-time)
-                                            text)))))
+                                                          (current-time)
+                                                          text)))))
      ((symbolp name)
       (setq name-symbol name))
      ((stringp name)
@@ -46,15 +46,26 @@
       (error "invalid name in make-htpwidget-textfield")))
     (make-htpwidget-textfield--internal :text text :name name-symbol)))
 
-(defun htpwidget-insert-textfield (textfield)
-  (let* ((inhibit-read-only t)
-         (text-raw (htpwidget-textfield-text textfield))
+(defun htpwidget-textfield-to-string (textfield)
+  (let* ((text-raw (htpwidget-textfield-text textfield))
          (text (if (eq 0 (length text-raw))
                    "?"
                  text-raw))
          (name (htpwidget-textfield-name textfield)))
-    (insert (propertize text
-                        'htpwidget-textfield name))))
+    (propertize text
+                'htpwidget-textfield name)))
+
+(defun htpwidget-insert-textfield (textfield)
+  (insert (htpwidget-textfield-to-string textfield))
+  ;; (let* ((inhibit-read-only t)
+  ;;        (text-raw (htpwidget-textfield-text textfield))
+  ;;        (text (if (eq 0 (length text-raw))
+  ;;                  "?"
+  ;;                text-raw))
+  ;;        (name (htpwidget-textfield-name textfield)))
+  ;;   (insert (propertize text
+  ;;                       'htpwidget-textfield name)))
+  )
 
 (defun htpwidget-update-textfield (textfield text)
   "Update TEXTFIELD with TEXT.
@@ -113,8 +124,13 @@ Point will move to the end of the updated text."
                (functionp after-update-hook))
       (funcall after-update-hook))))
 
+(defun htpwidget-get-variable-value-as-string (variable)
+  (htpwidget-textfield-to-string (htpwidget-variable-textfield variable)))
+
 (defun htpwidget-insert-variable-value (variable)
-  (htpwidget-insert-textfield (htpwidget-variable-textfield variable)))
+  (insert (htpwidget-get-variable-value-as-string variable))
+  ;; (htpwidget-insert-textfield (htpwidget-variable-textfield variable))
+  )
 
 (defun htpwidget-edit-variable (variable)
   (let* ((old-value (htpwidget-variable-value variable))

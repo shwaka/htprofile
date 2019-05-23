@@ -65,10 +65,13 @@
                (variable (make-htpwidget-variable :symbol symbol
                                                   :type type
                                                   :after-update-hook 'htprofile--variable-after-update-hook)))
-          (insert description)
-          (insert ": ")
-          (htpwidget-insert-variable-value variable)
-          (insert " ")
+          (insert (format "%s: %s "
+                          description
+                          (htpwidget-get-variable-value-as-string variable)))
+          ;; (insert description)
+          ;; (insert ": ")
+          ;; (htpwidget-insert-variable-value variable)
+          ;; (insert " ")
           (htpwidget-insert-evbutton "edit" (list variable) 'htprofile-handle-detected-update)
           (insert "\n"))
         ;; (insert (format "%s\n" (plist-get variable-data :symbol)))
