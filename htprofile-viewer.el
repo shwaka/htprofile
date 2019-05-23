@@ -29,16 +29,18 @@
 (require 'htprofile-widgets)
 
 (cl-defstruct (htpviewer-viewer (:constructor htpviewer-make-viewer--internal))
-  buffer-name variable-list)
+  buffer-name variable-list update-func)
 
-(cl-defun htpviewer-make-viewer (&key buffer-name variable-list)
+(cl-defun htpviewer-make-viewer (&key buffer-name variable-list update-func)
   "VARIABLE-LIST is a list of plists such as
 (:symbol my-variable :type integer :description \"description of the variable\")"
   (cl-check-type buffer-name string)
   ;; (cl-assert (htptable-table-p table))
   (cl-check-type variable-list list)
+  (cl-check-type update-func (or null function))
   (htpviewer-make-viewer--internal :buffer-name buffer-name
-                                   :variable-list variable-list))
+                                   :variable-list variable-list
+                                   :update-func update-func))
 
 (defun htpviewer-get-buffer (viewer)
   (let ((buffer-name (htpviewer-viewer-buffer-name viewer)))
@@ -62,9 +64,10 @@
         (let* ((symbol (plist-get variable-data :symbol))
                (type (plist-get variable-data :type))
                (description (plist-get variable-data :description))
+               (update-func (htpviewer-viewer-update-func viewer))
                (variable (make-htpwidget-variable :symbol symbol
                                                   :type type
-                                                  :after-update-hook 'htprofile--variable-after-update-hook)))
+                                                  :after-update-hook update-func)))
           (insert (format "%s: %s "
                           description
                           (htpwidget-get-variable-value-as-string variable)))
@@ -72,7 +75,7 @@
           ;; (insert ": ")
           ;; (htpwidget-insert-variable-value variable)
           ;; (insert " ")
-          (htpwidget-insert-evbutton "edit" (list variable) 'htprofile-handle-detected-update)
+          (htpwidget-insert-evbutton "edit" (list variable) 'nil)
           (insert "\n"))
         ;; (insert (format "%s\n" (plist-get variable-data :symbol)))
         )

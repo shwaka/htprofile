@@ -468,7 +468,8 @@ The value should be one of the following:
   "list of variables which are used in log")
 (defun htprofile-update-log ()
   (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer
-                                        :variable-list htprofile-log-variable-list))
+                                        :variable-list htprofile-log-variable-list
+                                        :update-func 'htprofile-update-log))
          (table (htptable-make-table
                  :col-format-list htprofile-log-col-format-list
                  :row-data-list (htprofile-get-data-list htprofile--show-log-from
