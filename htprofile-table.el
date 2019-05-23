@@ -34,6 +34,11 @@
   (cl-check-type header string) ;; (cl-assert (stringp header))
   (cl-check-type width (or integer null)) ;; (cl-assert (or (integerp width) (null width)))
   (cl-check-type data-formatter function) ;; (cl-assert (functionp data-formatter))
+  (cl-assert (cl-destructuring-bind (beg . end) (func-arity data-formatter)
+               (and (<= beg 1)
+                    (or (eq end 'many)
+                        (<= 1 end))))
+             nil "data-formatter must be a function with 1 argument")
   (unless align
     (setq align 'left))
   (cl-check-type align symbol) ;; (cl-assert (and (symbolp align) (memq align '(left right))))
