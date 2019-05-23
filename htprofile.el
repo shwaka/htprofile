@@ -436,32 +436,35 @@ The value should be one of the following:
 ;;                                                htprofile--show-log-to
 ;;                                                htprofile-data-filter-function))
 ;;           (insert (format "%s\n" (htprofile-data-to-str data))))))))
+(defvar htprofile-log-col-format-list
+  (list
+   (htptable-make-col-format
+    :header "id" :width htprofile-data-id-digit :align 'right
+    :data-formatter (lambda (data) (htprofile-data-id data)))
+   (htptable-make-col-format
+    :header "current" :width 9 :align 'left
+    :data-formatter (lambda (data) (format-time-string
+                                    "%H:%M:%S"
+                                    (htprofile-data-current-time data))))
+   (htptable-make-col-format
+    :header "type" :width 20 :align 'left
+    :data-formatter (lambda (data) (htprofile-get-type-str
+                                    (htprofile-data-type data)
+                                    (htprofile-data-idle-time data))))
+   (htptable-make-col-format
+    :header "elapse" :width (htprofile-get-float-width) :align 'left
+    :data-formatter (lambda (data) (htprofile-float-to-str
+                                    (float-time
+                                     (htprofile-data-elapsed-time data)))))
+   (htptable-make-col-format
+    :header "func" :width nil
+    :data-formatter (lambda (data) (htprofile-maybe-remove-newline
+                                    (htprofile-data-func-name data)))))
+  "list of col-format for log")
 (defun htprofile-update-log ()
   (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer))
-         (col-id (htptable-make-col-format
-                  :header "id" :width htprofile-data-id-digit :align 'right
-                  :data-formatter (lambda (data) (htprofile-data-id data))))
-         (col-current (htptable-make-col-format
-                       :header "current" :width 9 :align 'left
-                       :data-formatter (lambda (data) (format-time-string
-                                                       "%H:%M:%S"
-                                                       (htprofile-data-current-time data)))))
-         (col-type (htptable-make-col-format
-                    :header "type" :width 20 :align 'left
-                    :data-formatter (lambda (data) (htprofile-get-type-str
-                                                    (htprofile-data-type data)
-                                                    (htprofile-data-idle-time data)))))
-         (col-elapsed (htptable-make-col-format
-                       :header "elapse" :width (htprofile-get-float-width) :align 'left
-                       :data-formatter (lambda (data) (htprofile-float-to-str
-                                                       (float-time
-                                                        (htprofile-data-elapsed-time data))))))
-         (col-func (htptable-make-col-format
-                    :header "func" :width nil
-                    :data-formatter (lambda (data) (htprofile-maybe-remove-newline
-                                                    (htprofile-data-func-name data)))))
          (table (htptable-make-table
-                 :col-format-list (list col-id col-current col-type col-elapsed col-func)
+                 :col-format-list htprofile-log-col-format-list
                  :row-data-list (htprofile-get-data-list htprofile--show-log-from
                                                          htprofile--show-log-to
                                                          htprofile-data-filter-function))))
