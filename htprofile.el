@@ -462,9 +462,9 @@ The value should be one of the following:
                                     (htprofile-data-func-name data)))))
   "list of col-format for log")
 (defvar htprofile-log-variable-list
-  '((:symbol htprofile--show-log-from :type integer)
-    (:symbol htprofile--show-log-to :type integer)
-    (:symbol htprofile-min-elapsed-time :type integer))
+  '((:symbol htprofile--show-log-from :type integer :description "show log from")
+    (:symbol htprofile--show-log-to :type integer :description "show log up to")
+    (:symbol htprofile-min-elapsed-time :type integer :description "minimum elapsed time"))
   "list of variables which are used in log")
 (defun htprofile-update-log ()
   (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer

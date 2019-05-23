@@ -32,7 +32,8 @@
   buffer-name variable-list)
 
 (cl-defun htpviewer-make-viewer (&key buffer-name variable-list)
-  "VARIABLE-LIST is a list of plists such as (:symbol my-variable :type integer)"
+  "VARIABLE-LIST is a list of plists such as
+(:symbol my-variable :type integer :description \"description of the variable\")"
   (cl-check-type buffer-name string)
   ;; (cl-assert (htptable-table-p table))
   (cl-check-type variable-list list)
@@ -58,7 +59,20 @@
     (let (;; (table (htpviewer-viewer-table viewer))
           (inhibit-read-only t))
       (dolist (variable-data (htpviewer-viewer-variable-list viewer))
-        (insert (format "%s\n" (plist-get variable-data :symbol))))
+        (let* ((symbol (plist-get variable-data :symbol))
+               (type (plist-get variable-data :type))
+               (description (plist-get variable-data :description))
+               (variable (make-htpwidget-variable :symbol symbol
+                                                  :type type
+                                                  :after-update-hook 'htprofile--variable-after-update-hook)))
+          (insert description)
+          (insert ": ")
+          (htpwidget-insert-variable-value variable)
+          (insert " ")
+          (htpwidget-insert-evbutton "edit" (list variable) 'htprofile-handle-detected-update)
+          (insert "\n"))
+        ;; (insert (format "%s\n" (plist-get variable-data :symbol)))
+        )
       (insert "\n")
       (insert (htptable-table-to-string table)))
     ;; (goto-char (point-min))
