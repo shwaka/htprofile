@@ -434,6 +434,9 @@ The value should be one of the following:
 ;;           (htprofile-insert-stat-header)
 ;;           (dolist (stat stat-list)
 ;;             (insert (htprofile-stat-to-str stat))))))))
+(defvar htprofile-stat-variable-list
+  '((:symbol htprofile-sort-by :type symbol :description "sort by" :candidates (total-time max-time average-time)))
+  "list of variables which are used in log")
 (defun htprofile-update-statistics ()
   (let ((stat-list ())
         (sort-key-func (intern (concat "htprofile-stat-" (symbol-name htprofile-sort-by)))))
@@ -443,7 +446,7 @@ The value should be one of the following:
         (push (htprofile-compute-summary key data-list) stat-list)))
     (setq stat-list (cl-sort stat-list '> :key sort-key-func))
     (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-statistics-buffer
-                                          :variable-list ()
+                                          :variable-list htprofile-stat-variable-list
                                           :update-func 'htprofile-update-statistics))
            (table (htptable-make-table
                    :col-format-list htprofile-stat-col-format-list

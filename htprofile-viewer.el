@@ -33,7 +33,7 @@
 
 (cl-defun htpviewer-make-viewer (&key buffer-name variable-list update-func)
   "VARIABLE-LIST is a list of plists such as
-(:symbol my-variable :type integer :description \"description of the variable\")"
+(:symbol my-variable :type integer :description \"description of the variable\" :candidates (foo bar)"
   (cl-check-type buffer-name string)
   ;; (cl-assert (htptable-table-p table))
   (cl-check-type variable-list list)
@@ -68,9 +68,11 @@
         (let* ((symbol (plist-get variable-data :symbol))
                (type (plist-get variable-data :type))
                (description (plist-get variable-data :description))
+               (candidates (plist-get variable-data :candidates))
                (variable (make-htpwidget-variable :symbol symbol
                                                   :type type
-                                                  :after-update-hook update-func)))
+                                                  :after-update-hook update-func
+                                                  :candidates candidates)))
           (insert (format "%s: %s "
                           description
                           (htpwidget-get-variable-value-as-string variable)))
