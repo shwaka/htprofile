@@ -73,5 +73,21 @@ The value should be one of the following:
                                        (htprofile-get-float-multiplier)))
                             (htprofile-get-float-width)))
 
+(defun htprofile--filter-list (list &optional beg end filter)
+  (let ((len (length list))
+        data-list)
+    (if beg
+        (setq beg (max beg 0))
+      (setq beg 0))
+    (if end
+        (setq end (min end len))
+      (setq end len))
+    (setq data-list (cl-subseq list
+                               (- len end)
+                               (- len beg)))
+    (if filter
+        (seq-filter filter data-list)
+      data-list)))
+
 (provide 'htprofile-util)
 ;;; htprofile-util.el ends here

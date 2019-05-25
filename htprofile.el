@@ -124,20 +124,22 @@
 ;;; get data
 (defvar htprofile-data-filter-function 'htprofile-default-filter-function)
 (defun htprofile-get-data-list (&optional beg end filter)
-  (let ((len (length htprofile-data-list))
-        data-list)
-    (if beg
-        (setq beg (max beg 0))
-      (setq beg 0))
-    (if end
-        (setq end (min end len))
-      (setq end len))
-    (setq data-list (cl-subseq htprofile-data-list
-                               (- len end)
-                               (- len beg)))
-    (if filter
-        (seq-filter filter data-list)
-      data-list)))
+  (htprofile--filter-list htprofile-data-list beg end filter)
+  ;; (let ((len (length htprofile-data-list))
+  ;;       data-list)
+  ;;   (if beg
+  ;;       (setq beg (max beg 0))
+  ;;     (setq beg 0))
+  ;;   (if end
+  ;;       (setq end (min end len))
+  ;;     (setq end len))
+  ;;   (setq data-list (cl-subseq htprofile-data-list
+  ;;                              (- len end)
+  ;;                              (- len beg)))
+  ;;   (if filter
+  ;;       (seq-filter filter data-list)
+  ;;     data-list))
+  )
 
 (defun htprofile-data-list-length ()
   (length htprofile-data-list))

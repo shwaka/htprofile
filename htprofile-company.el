@@ -45,6 +45,16 @@
   "list of advice functions")
 (defvar htprofile-company-data-list ()
   "save data to this variable")
+(defvar htprofile-company-data-filter-function 'htprofile-company-get-data-list)
+(defvar htprofile-company-min-elapsed-time 0
+  "Time (millisecond) used in `htprofile-company-default-filter-function'.")
+(defun htprofile-company-get-data-list (&optional beg end filter)
+  (htprofile--filter-list htprofile-company-data-list
+                          beg end filter))
+(defun htprofile-company-default-filter-function (data)
+  (let* ((time (htprofile-company-data-elapsed-time data))
+         (time-float (float-time time)))
+    (>= (* 1000 time-float) htprofile-company-min-elapsed-time)))
 
 (defun htprofile-company-profile-backends ()
   (interactive)
@@ -121,14 +131,20 @@
     :header "args" :width nil
     :data-formatter (lambda (data) (format "%s" (htprofile-company-data-args data))))))
 
+(defvar htprofile-company-log-variable-list
+  '((:symbol htprofile-company-min-elapsed-time :type integer :description "minimum elapsed time")))
+
 (defun htprofile-company-update-log ()
   (interactive)
-  (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-company-log-buffer
-                                        :variable-list '()
+  (let* ((message (format "%s logs" (length (htprofile-company-get-data-list))))
+         (viewer (htpviewer-make-viewer :buffer-name htprofile-company-log-buffer
+                                        :variable-list htprofile-company-log-variable-list
                                         :update-func 'htprofile-company-update-log
-                                        :message "companyyyyyy"))
-         (table (htptable-make-table :col-format-list htprofile-company-log-col-format-list
-                                     :row-data-list htprofile-company-data-list)))
+                                        :message message))
+         (table (htptable-make-table
+                 :col-format-list htprofile-company-log-col-format-list
+                 :row-data-list (htprofile-company-get-data-list
+                                 nil nil 'htprofile-company-default-filter-function))))
     (htpviewer-update-viewer viewer table)
     (htpviewer-show-viewer viewer)))
 
