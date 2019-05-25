@@ -29,6 +29,7 @@
 (require 'htprofile-widgets)
 (require 'htprofile-viewer)
 (require 'htprofile-table)
+(require 'htprofile-util)
 
 ;; (defun htprofile-advice:company-call-backend (orig-func &rest args)
 ;;   (let ((start-time (current-time))
@@ -46,6 +47,7 @@
   "save data to this variable")
 
 (defun htprofile-company-profile-backends ()
+  (interactive)
   (let (backend-list)
     ;; flatten company-backends (ignoring :with)
     (dolist (backend company-backends)
@@ -99,11 +101,13 @@
     :header "backend" :width 20 :align 'left
     :data-formatter (lambda (data) (format "%s" (htprofile-company-data-backend-name data))))
    (htptable-make-col-format
-    :header "args" :width 30 :align 'left
-    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-args data))))
-   (htptable-make-col-format
     :header "elapse" :width 6 :align 'left
-    :data-formatter (lambda (data) (format "%s" (float-time (htprofile-company-data-elapsed-time data)))))))
+    :data-formatter (lambda (data)
+                      (format "%s" (htprofile-float-to-str
+                                    (float-time (htprofile-company-data-elapsed-time data))))))
+   (htptable-make-col-format
+    :header "args" :width nil
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-args data))))))
 
 (defun htprofile-company-update-log ()
   (interactive)
