@@ -81,22 +81,34 @@
             htprofile-company-data-list))))
 
 ;;; struct
+(defvar htprofile-company--data-id -1)
 (cl-defstruct (htprofile-company-data (:constructor htprofile-company-make-data--internal))
   "data for each call of company backend"
-  backend-name args elapsed-time)
+  backend-name args elapsed-time id current-time)
 (cl-defun htprofile-company-make-data (&key backend-name args elapsed-time)
   (assert (symbolp backend-name))
   (assert (listp elapsed-time))
   ;; (my-message "%S" (list backend-name args (float-time elapsed-time)))
+  (setq htprofile-company--data-id (1+ htprofile-company--data-id))
   (htprofile-company-make-data--internal :backend-name backend-name
                                          :args args
-                                         :elapsed-time elapsed-time))
+                                         :elapsed-time elapsed-time
+                                         :id htprofile-company--data-id
+                                         :current-time (current-time)))
 
 ;;; user interface
 (defvar htprofile-company-log-buffer
   "*htprofile-company-log*")
 (defvar htprofile-company-log-col-format-list
   (list
+   (htptable-make-col-format
+    :header "id" :width 6 :align 'right
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-id data))))
+   (htptable-make-col-format
+    :header "current" :width 9 :align 'left
+    :data-formatter (lambda (data) (format-time-string
+                                    "%H:%M:%S"
+                                    (htprofile-company-data-current-time data))))
    (htptable-make-col-format
     :header "backend" :width 20 :align 'left
     :data-formatter (lambda (data) (format "%s" (htprofile-company-data-backend-name data))))
