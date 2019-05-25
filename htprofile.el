@@ -310,6 +310,7 @@ The value should be one of the following:
   "The number of data which are shown by `htprofile-show-log'")
 (defvar htprofile--show-log-from)
 (defvar htprofile--show-log-to)
+
 (defvar htprofile-log-buffer "*htprofile-log*")
 (defvar htprofile-log-col-format-list
   (list
@@ -373,7 +374,7 @@ The value should be one of the following:
 ;;; filter function
 (defvar htprofile-min-elapsed-time 0
   "Time (millisecond) used in `htprofile-default-filter-function'.")
-(make-variable-buffer-local 'htprofile-min-elapsed-time)
+
 (defun htprofile-default-filter-function (data)
   (let* ((time (htprofile-data-elapsed-time data))
          (time-float (float-time time)))
