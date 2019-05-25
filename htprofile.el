@@ -342,9 +342,15 @@ The value should be one of the following:
     (:symbol htprofile-min-elapsed-time :type integer :description "minimum elapsed time"))
   "list of variables which are used in log")
 (defun htprofile-update-log ()
-  (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer
+  (let* ((num-data (length (htprofile-get-data-list)))
+         (message (format "Showing %d--%d of %d data"
+                          htprofile--show-log-from
+                          htprofile--show-log-to
+                          num-data))
+         (viewer (htpviewer-make-viewer :buffer-name htprofile-log-buffer
                                         :variable-list htprofile-log-variable-list
-                                        :update-func 'htprofile-update-log))
+                                        :update-func 'htprofile-update-log
+                                        :message message))
          (table (htptable-make-table
                  :col-format-list htprofile-log-col-format-list
                  :row-data-list (htprofile-get-data-list htprofile--show-log-from

@@ -29,18 +29,20 @@
 (require 'htprofile-widgets)
 
 (cl-defstruct (htpviewer-viewer (:constructor htpviewer-make-viewer--internal))
-  buffer-name variable-list update-func)
+  buffer-name variable-list update-func message)
 
-(cl-defun htpviewer-make-viewer (&key buffer-name variable-list update-func)
+(cl-defun htpviewer-make-viewer (&key buffer-name variable-list update-func message)
   "VARIABLE-LIST is a list of plists such as
 (:symbol my-variable :type integer :description \"description of the variable\" :candidates (foo bar)"
   (cl-check-type buffer-name string)
   ;; (cl-assert (htptable-table-p table))
   (cl-check-type variable-list list)
   (cl-check-type update-func (or null function))
+  (cl-check-type message (or null string))
   (htpviewer-make-viewer--internal :buffer-name buffer-name
                                    :variable-list variable-list
-                                   :update-func update-func))
+                                   :update-func update-func
+                                   :message message))
 
 (defun htpviewer-get-buffer (viewer)
   (let ((buffer-name (htpviewer-viewer-buffer-name viewer)))
@@ -85,6 +87,9 @@
         ;; (insert (format "%s\n" (plist-get variable-data :symbol)))
         )
       (insert "\n")
+      (let ((message (htpviewer-viewer-message viewer)))
+        (when message
+          (insert (format "%s\n" message))))
       (insert (htptable-table-to-string table)))
     ;; (goto-char (point-min))
     ;; (display-buffer (current-buffer))
