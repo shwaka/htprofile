@@ -271,15 +271,15 @@
 (defvar htprofile-log-col-format-list
   (list
    (htptable-make-col-format
-    :header "id" :width htprofile-data-id-digit :align 'right
-    :data-formatter (lambda (data) (htprofile-data-id data)))
+    :header "id" :width 'max :align 'right
+    :data-formatter (lambda (data) (number-to-string (htprofile-data-id data))))
    (htptable-make-col-format
     :header "current" :width 9 :align 'left
     :data-formatter (lambda (data) (format-time-string
                                     "%H:%M:%S"
                                     (htprofile-data-current-time data))))
    (htptable-make-col-format
-    :header "type" :width 20 :align 'left
+    :header "type" :width 'max :align 'left
     :data-formatter (lambda (data) (htprofile-get-type-str
                                     (htprofile-data-type data)
                                     (htprofile-data-idle-time data))))
