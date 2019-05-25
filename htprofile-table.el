@@ -102,6 +102,8 @@
                                  :row-data-list row-data-list))
 
 (defun htptable-table-to-string (table)
+  "not recommended to use (slow)"
+  ;; 文字列結合は重い？O(N^2)?
   (cl-assert (htptable-table-p table))
   (let ((col-format-list (htptable-table-col-format-list table))
         (row-data-list (htptable-table-row-data-list table))
@@ -130,7 +132,21 @@
     result))
 
 (defun htptable-insert-table (table)
-  (insert (htptable-table-to-string table)))
+  "Same result as(insert (htptable-table-to-string table)), but much faster"
+  (cl-assert (htptable-table-p table))
+  (let ((col-format-list (htptable-table-col-format-list table))
+        (row-data-list (htptable-table-row-data-list table))
+        (header-start (point)))
+    ;; add header
+    (dolist (col-format col-format-list)
+      (insert (format "%s " (htptable-format-header col-format))))
+    (insert "\n")
+    (add-face-text-property header-start (point) 'htptable-header-face)
+    ;; add rows
+    (dolist (row-data row-data-list)
+      (dolist (col-format col-format-list)
+        (insert (format "%s " (htptable-format-cell col-format row-data))))
+      (insert "\n"))))
 
 
 (provide 'htprofile-table)
