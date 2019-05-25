@@ -27,6 +27,8 @@
 
 (require 'cl-lib)
 (require 'htprofile-widgets)
+(require 'htprofile-viewer)
+(require 'htprofile-table)
 
 ;; (defun htprofile-advice:company-call-backend (orig-func &rest args)
 ;;   (let ((start-time (current-time))
@@ -71,22 +73,55 @@
     (prog1 (apply backend args)
       (setq end-time (current-time)
             elapsed-time (time-subtract end-time start-time))
-      (push (make-htprofile-company-data :backend-name backend-name
+      (push (htprofile-company-make-data :backend-name backend-name
                                          :args args
                                          :elapsed-time elapsed-time)
             htprofile-company-data-list))))
 
 ;;; struct
-(cl-defstruct (htprofile-company-data (:constructor make-htprofile-company-data--internal))
+(cl-defstruct (htprofile-company-data (:constructor htprofile-company-make-data--internal))
   "data for each call of company backend"
   backend-name args elapsed-time)
-(cl-defun make-htprofile-company-data (&key backend-name args elapsed-time)
+(cl-defun htprofile-company-make-data (&key backend-name args elapsed-time)
   (assert (symbolp backend-name))
   (assert (listp elapsed-time))
-  (my-message "%S" (list backend-name args (float-time elapsed-time)))
-  (make-htprofile-company-data--internal :backend-name backend-name
+  ;; (my-message "%S" (list backend-name args (float-time elapsed-time)))
+  (htprofile-company-make-data--internal :backend-name backend-name
                                          :args args
                                          :elapsed-time elapsed-time))
+
+;;; user interface
+(defvar htprofile-company-log-buffer
+  "*htprofile-company-log*")
+(defvar htprofile-company-log-col-format-list
+  (list
+   (htptable-make-col-format
+    :header "backend" :width 20 :align 'left
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-backend-name data))))
+   (htptable-make-col-format
+    :header "args" :width 30 :align 'left
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-args data))))
+   (htptable-make-col-format
+    :header "elapse" :width 6 :align 'left
+    :data-formatter (lambda (data) (format "%s" (float-time (htprofile-company-data-elapsed-time data)))))))
+
+(defun htprofile-company-update-log ()
+  (interactive)
+  (let* ((viewer (htpviewer-make-viewer :buffer-name htprofile-company-log-buffer
+                                        :variable-list '()
+                                        :update-func 'htprofile-company-update-log
+                                        :message "companyyyyyy"))
+         (table (htptable-make-table :col-format-list htprofile-company-log-col-format-list
+                                     :row-data-list htprofile-company-data-list)))
+    (htpviewer-update-viewer viewer table)
+    (htpviewer-show-viewer viewer)))
+
+;; (defun htprofile-company-show-log ()
+;;   (interactive)
+;;   (htprofile-company-update-log)
+;;   (with-current-buffer (get-buffer htprofile-company-log-buffer)
+;;     (goto-char (point-min))
+;;     (display-buffer (current-buffer))))
 
 (provide 'htprofile-company)
 ;;; htprofile-company.el ends here
