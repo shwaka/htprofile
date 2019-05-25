@@ -129,6 +129,9 @@
             (concat result "\n")))
     result))
 
+(defun htptable-insert-table (table)
+  (insert (htptable-table-to-string table)))
+
 
 (provide 'htprofile-table)
 ;;; htprofile-table.el ends here

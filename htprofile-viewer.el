@@ -90,7 +90,7 @@
       (let ((message (htpviewer-viewer-message viewer)))
         (when message
           (insert (format "%s\n" message))))
-      (insert (htptable-table-to-string table)))
+      (htptable-insert-table table))
     ;; (goto-char (point-min))
     ;; (display-buffer (current-buffer))
     ))
