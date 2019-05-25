@@ -112,7 +112,7 @@
 (defvar htprofile-company-log-col-format-list
   (list
    (htptable-make-col-format
-    :header "id" :width 6 :align 'right
+    :header "id" :width 'max :align 'right
     :data-formatter (lambda (data) (format "%s" (htprofile-company-data-id data))))
    (htptable-make-col-format
     :header "current" :width 9 :align 'left

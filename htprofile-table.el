@@ -25,14 +25,18 @@
 ;;; Code:
 
 (require 'cl-lib)
+(require 'seq)
 
 ;;; column format
-(cl-defstruct (htptable-col-format (:constructor htptable-make-col-format--internal))
+(cl-defstruct (htptable-col-format (:constructor htptable-make-col-format--internal)
+                                   (:copier htptable-copy-col-format))
   header width data-formatter align)
 
 (cl-defun htptable-make-col-format (&key header width data-formatter align)
   (cl-check-type header string) ;; (cl-assert (stringp header))
-  (cl-check-type width (or integer null)) ;; (cl-assert (or (integerp width) (null width)))
+  (cl-check-type width (or integer symbol)) ;; (cl-assert (or (integerp width) (null width)))
+  (when (cl-typep width 'symbol)
+    (cl-assert (memq width '(nil max))))
   (cl-check-type data-formatter function) ;; (cl-assert (functionp data-formatter))
   (cl-assert (cl-destructuring-bind (beg . end) (func-arity data-formatter)
                (and (<= beg 1)
@@ -94,14 +98,29 @@
     (htptable-normalize-string orig-header width align)
     ))
 
-(defun htptable-format-cell (col-format row-data-list)
+(defun htptable-row-data-to-string (col-format row-data)
+  (let ((formatter (htptable-col-format-data-formatter col-format)))
+    (funcall formatter row-data)))
+
+(defun htptable-format-cell (col-format row-data)
   (cl-assert (htptable-col-format-p col-format))
-  (let* ((formatter (htptable-col-format-data-formatter col-format))
-         (width (htptable-col-format-width col-format))
+  (let* ((width (htptable-col-format-width col-format))
          (align (htptable-col-format-align col-format))
-         (orig-str (funcall formatter row-data-list)))
+         (orig-str (htptable-row-data-to-string col-format row-data)))
     (htptable-normalize-string orig-str width align ;; 'htptable-truncate-ellipsis-face
                                )))
+
+(defvar htptable--temporary-data-list nil)
+(defun htptable-make-col-format--fixed-width (col-format)
+  "htptable--temporary-data-list の値を用いて，:width に integer を代入したものを返す"
+  (let ((copied-col-format (htptable-copy-col-format col-format))
+        (width (htptable-col-format-width col-format)))
+    (when (eq width 'max)
+      (setf (htptable-col-format-width copied-col-format)
+            (seq-reduce (lambda (x y) (max x (length (htptable-row-data-to-string col-format y))))
+                        htptable--temporary-data-list
+                        (length (htptable-col-format-header col-format)))))
+    copied-col-format))
 
 
 ;;; table
@@ -146,9 +165,11 @@
 (defun htptable-insert-table (table)
   "Same result as(insert (htptable-table-to-string table)), but much faster"
   (cl-assert (htptable-table-p table))
-  (let ((col-format-list (htptable-table-col-format-list table))
-        (row-data-list (htptable-table-row-data-list table))
-        (header-start (point)))
+  (let* ((row-data-list (htptable-table-row-data-list table))
+         (col-format-list (let ((htptable--temporary-data-list row-data-list))
+                            (mapcar 'htptable-make-col-format--fixed-width
+                                    (htptable-table-col-format-list table))))
+         (header-start (point)))
     ;; add header
     (dolist (col-format col-format-list)
       (insert (format "%s " (htptable-format-header col-format))))
