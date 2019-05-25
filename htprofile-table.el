@@ -55,6 +55,9 @@
   '((t :inherit font-lock-comment-face))
   "face for ellipsis in table")
 
+(defun htptable-ellipsis-pressed (button)
+  (message (button-get button 'htprofile-truncated-string)))
+
 (defun htptable-normalize-string (str width align &optional ellipsis-face)
   (when (eq align 'right)
     (setq str (format (format "%%%ds" width)
@@ -65,11 +68,19 @@
            (truncated-str (truncate-string-to-width str width nil
                                                     32 ;; charcode of space
                                                     htptable-truncate-ellipsis)))
-      (when (and ellipsis-face
-                 (> str-len width))
-        (add-face-text-property (- width (length htptable-truncate-ellipsis)) width
-                                ellipsis-face nil
-                                truncated-str))
+      (when (> str-len width)
+        (add-text-properties (1- width) width
+                             (list 'action 'htptable-ellipsis-pressed
+                                   'button t
+                                   'category 'default-button
+                                   'follow-link t
+                                   'htprofile-truncated-string str)
+                             truncated-str)
+        (when ellipsis-face
+          (add-face-text-property (- width (length htptable-truncate-ellipsis)) width
+                                  ellipsis-face nil
+                                  truncated-str)))
+
       truncated-str)))
 
 (defface htptable-header-face
@@ -89,7 +100,8 @@
          (width (htptable-col-format-width col-format))
          (align (htptable-col-format-align col-format))
          (orig-str (funcall formatter row-data-list)))
-    (htptable-normalize-string orig-str width align 'htptable-truncate-ellipsis-face)))
+    (htptable-normalize-string orig-str width align ;; 'htptable-truncate-ellipsis-face
+                               )))
 
 
 ;;; table
