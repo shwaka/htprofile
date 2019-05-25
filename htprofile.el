@@ -31,6 +31,7 @@
 (require 'htprofile-widgets)
 (require 'htprofile-viewer)
 (require 'htprofile-table)
+(require 'htprofile-util)
 
 (defvar htprofile-data-list ()
   "save data to this variable")
@@ -176,54 +177,7 @@
                          :total-time total-time-float
                          :max-time max-time-float
                          :average-time average-time-float)))
-(defun htprofile-format (obj str-len)
-  (truncate-string-to-width (format (format "%%-%ds" str-len)
-                                    obj)
-                            str-len))
-(defvar htprofile-float-format 'msec
-  "Specifies the format to show float number (elapsed time)
-The value should be one of the following:
-- sec (symbol)
-- msec (symbol)
-- (:width NUM :precision NUM :multiplier NUM) (plist)")
-(defun htprofile-get-float-format ()
-  (cond
-   ((eq htprofile-float-format 'sec)
-    (list :width 9
-          :precision 6
-          :multiplier 1))
-   ((eq htprofile-float-format 'msec)
-    (list :width 6
-          :precision 0
-          :multiplier 1000))
-   ((and (listp htprofile-float-format)
-         (plist-get htprofile-float-format :width)
-         (plist-get htprofile-float-format :precision)
-         (plist-get htprofile-float-format :multiplier))
-    htprofile-float-format)
-   (t
-    (error "Invalid value: htprofile-float-format"))))
-(defun htprofile-get-float-format-description ()
-  (cond
-   ((eq htprofile-float-format 'sec)
-    "second")
-   ((eq htprofile-float-format 'msec)
-    "millisecond")
-   (t
-    "user-defined format")))
-(defun htprofile-get-float-width ()
-  (plist-get (htprofile-get-float-format) :width))
-(defun htprofile-get-float-precision ()
-  (plist-get (htprofile-get-float-format) :precision))
-(defun htprofile-get-float-multiplier ()
-  (plist-get (htprofile-get-float-format) :multiplier))
-(defun htprofile-float-to-str (float-number)
-  (truncate-string-to-width (format (format "%%%d.%df"
-                                            (htprofile-get-float-width)
-                                            (htprofile-get-float-precision))
-                                    (* float-number
-                                       (htprofile-get-float-multiplier)))
-                            (htprofile-get-float-width)))
+
 (defun htprofile-get-type-str (type idle-time)
   (if idle-time
       (format "%s:%.2f"
@@ -366,10 +320,11 @@ The value should be one of the following:
     (setq htprofile--show-log-from (max 0 (- len htprofile-max-log))
           htprofile--show-log-to len))
   (htprofile-update-log)
-  (with-current-buffer (get-buffer htprofile-log-buffer)
-    ;; (setq htprofile--buffer-update-function 'htprofile-update-log)
-    (goto-char (point-min))
-    (display-buffer (current-buffer))))
+  ;; (with-current-buffer (get-buffer htprofile-log-buffer)
+  ;;   ;; (setq htprofile--buffer-update-function 'htprofile-update-log)
+  ;;   (goto-char (point-min))
+  ;;   (display-buffer (current-buffer)))
+  )
 
 ;;; filter function
 (defvar htprofile-min-elapsed-time 0
