@@ -109,6 +109,16 @@
 ;;; user interface
 (defvar htprofile-company-log-buffer
   "*htprofile-company-log*")
+(defvar htprofile-company-abbrev-backend-name
+  t
+  "company-capf -> -capf")
+(defun htprofile-company-get-backend-name (data)
+  "return the name of backend as a string (possibly abbreviate)"
+  (let* ((orig-symbol (htprofile-company-data-backend-name data))
+         (orig-str (symbol-name orig-symbol)))
+    (if htprofile-company-abbrev-backend-name
+        (replace-regexp-in-string (rx bol "company-") "-" orig-str)
+      orig-str)))
 (defvar htprofile-company-log-col-format-list
   (list
    (htptable-make-col-format
@@ -120,8 +130,8 @@
                                     "%H:%M:%S"
                                     (htprofile-company-data-current-time data))))
    (htptable-make-col-format
-    :header "backend" :width 20 :align 'left
-    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-backend-name data))))
+    :header "backend" :width 'max :align 'left
+    :data-formatter 'htprofile-company-get-backend-name)
    (htptable-make-col-format
     :header "elapse" :width 6 :align 'left
     :data-formatter (lambda (data)
@@ -134,8 +144,10 @@
     :header "args" :width nil
     :data-formatter (lambda (data) (format "%s" (cdr (htprofile-company-data-args data)))))))
 
+
 (defvar htprofile-company-log-variable-list
-  '((:symbol htprofile-company-min-elapsed-time :type integer :description "minimum elapsed time")))
+  '((:symbol htprofile-company-min-elapsed-time :type integer :description "minimum elapsed time")
+    (:symbol htprofile-company-abbrev-backend-name :type symbol :description "abbreviate backend name" :candidates (t nil))))
 
 (defun htprofile-company-update-log ()
   (interactive)
