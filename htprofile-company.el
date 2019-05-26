@@ -128,8 +128,11 @@
                       (format "%s" (htprofile-float-to-str
                                     (float-time (htprofile-company-data-elapsed-time data))))))
    (htptable-make-col-format
+    :header "command" :width 'max
+    :data-formatter (lambda (data) (format "%s" (car (htprofile-company-data-args data)))))
+   (htptable-make-col-format
     :header "args" :width nil
-    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-args data))))))
+    :data-formatter (lambda (data) (format "%s" (cdr (htprofile-company-data-args data)))))))
 
 (defvar htprofile-company-log-variable-list
   '((:symbol htprofile-company-min-elapsed-time :type integer :description "minimum elapsed time")))
