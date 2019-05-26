@@ -79,32 +79,38 @@
       (add-to-list 'htprofile-company--advice-list (cons backend advice-name)))))
 (defun htprofile-company--run-backend-with-profile (backend args backend-name)
   "htprofile-profile-func を参考"
-  (let ((start-time (current-time))
-        end-time
-        elapsed-time)
-    (prog1 (apply backend args)
-      (setq end-time (current-time)
-            elapsed-time (time-subtract end-time start-time))
-      (push (htprofile-company-make-data :backend-name backend-name
-                                         :args args
-                                         :elapsed-time elapsed-time)
-            htprofile-company-data-list))))
+  (let* ((start-time (current-time))
+         (result (apply backend args))
+         (end-time (current-time))
+         (elapsed-time (time-subtract end-time start-time))
+         (async (and (listp result)
+                     (eq (car result) :async))))
+    ;; (setq end-time (current-time)
+    ;;       elapsed-time (time-subtract end-time start-time))
+    (push (htprofile-company-make-data :backend-name backend-name
+                                       :args args
+                                       :elapsed-time elapsed-time
+                                       :async async)
+          htprofile-company-data-list)
+    result))
 
 ;;; struct
 (defvar htprofile-company--data-id -1)
 (cl-defstruct (htprofile-company-data (:constructor htprofile-company-make-data--internal))
   "data for each call of company backend"
-  backend-name args elapsed-time id current-time)
-(cl-defun htprofile-company-make-data (&key backend-name args elapsed-time)
-  (assert (symbolp backend-name))
-  (assert (listp elapsed-time))
-  ;; (my-message "%S" (list backend-name args (float-time elapsed-time)))
+  backend-name args elapsed-time id current-time async)
+(cl-defun htprofile-company-make-data (&key backend-name args elapsed-time async)
+  (cl-check-type backend-name symbol) ;; (assert (symbolp backend-name))
+  (cl-check-type elapsed-time list)  ;; (assert (listp elapsed-time))
+  ;; (cl-check-type args list)
+  (cl-check-type async symbol)
   (setq htprofile-company--data-id (1+ htprofile-company--data-id))
   (htprofile-company-make-data--internal :backend-name backend-name
                                          :args args
                                          :elapsed-time elapsed-time
                                          :id htprofile-company--data-id
-                                         :current-time (current-time)))
+                                         :current-time (current-time)
+                                         :async async))
 
 ;;; user interface
 (defvar htprofile-company-log-buffer
@@ -137,6 +143,9 @@
     :data-formatter (lambda (data)
                       (format "%s" (htprofile-float-to-str
                                     (float-time (htprofile-company-data-elapsed-time data))))))
+   (htptable-make-col-format
+    :header "async" :width 5 :align 'left
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-async data))))
    (htptable-make-col-format
     :header "command" :width 'max
     :data-formatter (lambda (data) (format "%s" (car (htprofile-company-data-args data)))))
