@@ -90,8 +90,16 @@
          (result (apply backend args))
          (end-time (current-time))
          (elapsed-time (time-subtract end-time start-time))
-         (async (and (listp result)
-                     (eq (car result) :async))))
+         async)
+    (when (and (listp result)
+               (eq (car result) :async))
+      ;; when async
+      (setq async 'start)
+      (setq result (cons :async
+                         (htprofile-company--hook-fetcher (cdr result)
+                                                          backend-name
+                                                          args
+                                                          start-time))))
     ;; (setq end-time (current-time)
     ;;       elapsed-time (time-subtract end-time start-time))
     (push (htprofile-company-make-data :backend-name backend-name
@@ -100,6 +108,16 @@
                                        :async async)
           htprofile-company-data-list)
     result))
+(defun htprofile-company--hook-fetcher (fetcher backend-name args start-time)
+  (lambda (callback)
+    (let ((value (funcall fetcher callback)))
+      (push (htprofile-company-make-data :backend-name backend-name
+                                         :args args
+                                         :elapsed-time (time-subtract (current-time)
+                                                                      start-time)
+                                         :async 'end)
+            htprofile-company-data-list)
+      value)))
 
 ;;; struct
 (defvar htprofile-company--data-id -1)
