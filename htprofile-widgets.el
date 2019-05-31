@@ -154,9 +154,10 @@ Point will move to the end of the updated text."
       (setq prompt (format "Input %s (string, default %s): "
                            symbol
                            old-value))
-      (setq new-value
-            (completing-read prompt candidates nil t
-                             nil nil old-value)))
+      (let ((require-match (not (null candidates))))
+        (setq new-value
+              (completing-read prompt candidates nil require-match
+                               nil nil old-value))))
      ((eq type 'symbol)
       (setq prompt (format "Input %s (symbol name, defualt %s): "
                            symbol

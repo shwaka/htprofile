@@ -48,13 +48,20 @@
 (defvar htprofile-company-data-filter-function 'htprofile-company-get-data-list)
 (defvar htprofile-company-min-elapsed-time 0
   "Time (millisecond) used in `htprofile-company-default-filter-function'.")
+(defvar htprofile-company-backend-name-regexp
+  ""
+  "Regular expression used in `htprofile-company-default-filter-function'.")
 (defun htprofile-company-get-data-list (&optional beg end filter)
   (htprofile--filter-list htprofile-company-data-list
                           beg end filter))
 (defun htprofile-company-default-filter-function (data)
-  (let* ((time (htprofile-company-data-elapsed-time data))
-         (time-float (float-time time)))
-    (>= (* 1000 time-float) htprofile-company-min-elapsed-time)))
+  (and (let* ((time (htprofile-company-data-elapsed-time data))
+              (time-float (float-time time)))
+         (>= (* 1000 time-float) htprofile-company-min-elapsed-time))
+       (let* ((backend-name-symbol (htprofile-company-data-backend-name data))
+              (backend-name (symbol-name backend-name-symbol)))
+         (string-match-p htprofile-company-backend-name-regexp
+                         backend-name))))
 
 (defun htprofile-company-profile-backends ()
   (interactive)
@@ -156,7 +163,8 @@
 
 (defvar htprofile-company-log-variable-list
   '((:symbol htprofile-company-min-elapsed-time :type integer :description "minimum elapsed time")
-    (:symbol htprofile-company-abbrev-backend-name :type symbol :description "abbreviate backend name" :candidates (t nil))))
+    (:symbol htprofile-company-abbrev-backend-name :type symbol :description "abbreviate backend name" :candidates (t nil))
+    (:symbol htprofile-company-backend-name-regexp :type string :description "backend name regexp")))
 
 (defun htprofile-company-update-log ()
   (interactive)
