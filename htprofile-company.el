@@ -96,10 +96,10 @@
       ;; when async
       (setq async 'start)
       (setq result (cons :async
-                         (htprofile-company--hook-fetcher (cdr result)
-                                                          backend-name
-                                                          args
-                                                          start-time))))
+                         (htprofile-company--advise-fetcher (cdr result)
+                                                            backend-name
+                                                            args
+                                                            start-time))))
     ;; (setq end-time (current-time)
     ;;       elapsed-time (time-subtract end-time start-time))
     (push (htprofile-company-make-data :backend-name backend-name
@@ -108,16 +108,22 @@
                                        :async async)
           htprofile-company-data-list)
     result))
-(defun htprofile-company--hook-fetcher (fetcher backend-name args start-time)
+(defun htprofile-company--advise-fetcher (fetcher backend-name args start-time)
   (lambda (callback)
-    (let ((value (funcall fetcher callback)))
-      (push (htprofile-company-make-data :backend-name backend-name
-                                         :args args
-                                         :elapsed-time (time-subtract (current-time)
-                                                                      start-time)
-                                         :async 'end)
-            htprofile-company-data-list)
-      value)))
+    (let ((callback-with-hook (htprofile-company--advise-callback callback
+                                                                  backend-name
+                                                                  args
+                                                                  start-time)))
+      (funcall fetcher callback-with-hook))))
+(defun htprofile-company--advise-callback (callback backend-name args start-time)
+  (lambda (return-value)
+    (push (htprofile-company-make-data :backend-name backend-name
+                                       :args args
+                                       :elapsed-time (time-subtract (current-time)
+                                                                    start-time)
+                                       :async 'end)
+          htprofile-company-data-list)
+    (funcall callback return-value)))
 
 ;;; struct
 (defvar htprofile-company--data-id -1)
