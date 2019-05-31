@@ -170,6 +170,11 @@
             (format "\"%s\"" arg)
           (format "%S" arg))))
      (t (format "%d args: %S" (length args) args)))))
+(defun htprofile-company-format-async-from-data (data)
+  (let ((async (htprofile-company-data-async data)))
+    (if async
+        (format "%s" async)
+      "")))
 (defvar htprofile-company-log-col-format-list
   (list
    (htptable-make-col-format
@@ -190,7 +195,7 @@
                                     (float-time (htprofile-company-data-elapsed-time data))))))
    (htptable-make-col-format
     :header "async" :width 5 :align 'left
-    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-async data))))
+    :data-formatter 'htprofile-company-format-async-from-data)
    (htptable-make-col-format
     :header "command" :width 'max
     :data-formatter (lambda (data) (format "%s" (htprofile-company-data-command data))))
