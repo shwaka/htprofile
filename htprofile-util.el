@@ -66,12 +66,15 @@ The value should be one of the following:
 (defun htprofile-get-float-multiplier ()
   (plist-get (htprofile-get-float-format) :multiplier))
 (defun htprofile-float-to-str (float-number)
-  (truncate-string-to-width (format (format "%%%d.%df"
-                                            (htprofile-get-float-width)
-                                            (htprofile-get-float-precision))
-                                    (* float-number
-                                       (htprofile-get-float-multiplier)))
-                            (htprofile-get-float-width)))
+  (let* ((multiplied (* float-number
+                        (htprofile-get-float-multiplier))))
+    (when (eq (htprofile-get-float-precision) 0)
+      (setq multiplied (floor multiplied)))
+    (truncate-string-to-width (format (format "%%%d.%df"
+                                              (htprofile-get-float-width)
+                                              (htprofile-get-float-precision))
+                                      multiplied)
+                              (htprofile-get-float-width))))
 
 (defun htprofile--filter-list (list &optional beg end filter)
   (let ((len (length list))
