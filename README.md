@@ -1,8 +1,13 @@
 # Usage
+## Profile hooks and timers
 1. Start logging by `M-x htprofile-start`
 2. Show data by one of the following
     - Show statistics by `M-x htprofile-show-statistics`
     - Show log data in a raw form by `M-x htprofile-show-log`
+
+## Profile company
+1. Start logging by `M-x htprofile-company-profile-backends`
+2. Show data by `M-x htprofile-company-show-log`
 
 # Customization
 ```elisp

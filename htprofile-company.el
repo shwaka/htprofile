@@ -210,7 +210,6 @@
     (:symbol htprofile-company-backend-name-regexp :type string :description "backend name regexp")))
 
 (defun htprofile-company-update-log ()
-  (interactive)
   (let* ((message (format "%s logs" (length (htprofile-company-get-data-list))))
          (viewer (htpviewer-make-viewer :buffer-name htprofile-company-log-buffer
                                         :variable-list htprofile-company-log-variable-list
@@ -221,14 +220,13 @@
                  :row-data-list (htprofile-company-get-data-list
                                  nil nil 'htprofile-company-default-filter-function))))
     (htpviewer-update-viewer viewer table)
-    (htpviewer-show-viewer viewer)))
+    ;; (htpviewer-show-viewer viewer)
+    viewer))
 
-;; (defun htprofile-company-show-log ()
-;;   (interactive)
-;;   (htprofile-company-update-log)
-;;   (with-current-buffer (get-buffer htprofile-company-log-buffer)
-;;     (goto-char (point-min))
-;;     (display-buffer (current-buffer))))
+(defun htprofile-company-show-log ()
+  (interactive)
+  (let ((viewer (htprofile-company-update-log)))
+    (htpviewer-show-viewer viewer)))
 
 (provide 'htprofile-company)
 ;;; htprofile-company.el ends here
