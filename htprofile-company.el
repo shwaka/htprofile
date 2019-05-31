@@ -49,7 +49,7 @@
 (defvar htprofile-company-min-elapsed-time 0
   "Time (millisecond) used in `htprofile-company-default-filter-function'.")
 (defvar htprofile-company-backend-name-regexp
-  ""
+  "."
   "Regular expression used in `htprofile-company-default-filter-function'.")
 (defun htprofile-company-get-data-list (&optional beg end filter)
   (htprofile--filter-list htprofile-company-data-list
