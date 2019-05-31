@@ -79,15 +79,15 @@
   "htprofile-profile-hook を参考"
   (dolist (backend backend-list)
     (let ((advice-name (intern (format "htprofile-company-advice:%s" backend))))
-      (eval `(defun ,advice-name (orig-func &rest args)
+      (eval `(defun ,advice-name (orig-func &rest command-args)
                "advice added in order to profile"
-               (htprofile-company--run-backend-with-profile orig-func args (quote ,backend))))
+               (htprofile-company--run-backend-with-profile orig-func command-args (quote ,backend))))
       (advice-add backend :around advice-name)
       (add-to-list 'htprofile-company--advice-list (cons backend advice-name)))))
-(defun htprofile-company--run-backend-with-profile (backend args backend-name)
+(defun htprofile-company--run-backend-with-profile (backend command-args backend-name)
   "htprofile-profile-func を参考"
   (let* ((start-time (current-time))
-         (result (apply backend args))
+         (result (apply backend command-args))
          (end-time (current-time))
          (elapsed-time (time-subtract end-time start-time))
          async)
@@ -98,27 +98,27 @@
       (setq result (cons :async
                          (htprofile-company--advise-fetcher (cdr result)
                                                             backend-name
-                                                            args
+                                                            command-args
                                                             start-time))))
     ;; (setq end-time (current-time)
     ;;       elapsed-time (time-subtract end-time start-time))
     (push (htprofile-company-make-data :backend-name backend-name
-                                       :args args
+                                       :command-args command-args
                                        :elapsed-time elapsed-time
                                        :async async)
           htprofile-company-data-list)
     result))
-(defun htprofile-company--advise-fetcher (fetcher backend-name args start-time)
+(defun htprofile-company--advise-fetcher (fetcher backend-name command-args start-time)
   (lambda (callback)
     (let ((callback-with-hook (htprofile-company--advise-callback callback
                                                                   backend-name
-                                                                  args
+                                                                  command-args
                                                                   start-time)))
       (funcall fetcher callback-with-hook))))
-(defun htprofile-company--advise-callback (callback backend-name args start-time)
+(defun htprofile-company--advise-callback (callback backend-name command-args start-time)
   (lambda (return-value)
     (push (htprofile-company-make-data :backend-name backend-name
-                                       :args args
+                                       :command-args command-args
                                        :elapsed-time (time-subtract (current-time)
                                                                     start-time)
                                        :async 'end)
@@ -129,19 +129,22 @@
 (defvar htprofile-company--data-id -1)
 (cl-defstruct (htprofile-company-data (:constructor htprofile-company-make-data--internal))
   "data for each call of company backend"
-  backend-name args elapsed-time id current-time async)
-(cl-defun htprofile-company-make-data (&key backend-name args elapsed-time async)
+  backend-name command args elapsed-time id current-time async)
+(cl-defun htprofile-company-make-data (&key backend-name command-args elapsed-time async)
   (cl-check-type backend-name symbol) ;; (assert (symbolp backend-name))
   (cl-check-type elapsed-time list)  ;; (assert (listp elapsed-time))
   ;; (cl-check-type args list)
   (cl-check-type async symbol)
   (setq htprofile-company--data-id (1+ htprofile-company--data-id))
-  (htprofile-company-make-data--internal :backend-name backend-name
-                                         :args args
-                                         :elapsed-time elapsed-time
-                                         :id htprofile-company--data-id
-                                         :current-time (current-time)
-                                         :async async))
+  (let ((command (car command-args))
+        (args (cdr command-args)))
+    (htprofile-company-make-data--internal :backend-name backend-name
+                                           :command command
+                                           :args args
+                                           :elapsed-time elapsed-time
+                                           :id htprofile-company--data-id
+                                           :current-time (current-time)
+                                           :async async)))
 
 ;;; user interface
 (defvar htprofile-company-log-buffer
@@ -157,7 +160,7 @@
         (replace-regexp-in-string (rx bol "company-") "-" orig-str)
       orig-str)))
 (defun htprofile-company-format-args-from-data (data)
-  (let ((args (cdr (htprofile-company-data-args data))))
+  (let ((args (htprofile-company-data-args data)))
     (cond
      ((null args) (propertize "<no args>"
                               'face 'font-lock-comment-face))
@@ -190,7 +193,7 @@
     :data-formatter (lambda (data) (format "%s" (htprofile-company-data-async data))))
    (htptable-make-col-format
     :header "command" :width 'max
-    :data-formatter (lambda (data) (format "%s" (car (htprofile-company-data-args data)))))
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-command data))))
    (htptable-make-col-format
     :header "args" :width nil
     :data-formatter 'htprofile-company-format-args-from-data)))
