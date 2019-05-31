@@ -156,6 +156,17 @@
     (if htprofile-company-abbrev-backend-name
         (replace-regexp-in-string (rx bol "company-") "-" orig-str)
       orig-str)))
+(defun htprofile-company-format-args-from-data (data)
+  (let ((args (cdr (htprofile-company-data-args data))))
+    (cond
+     ((null args) (propertize "<no args>"
+                              'face 'font-lock-comment-face))
+     ((eq (length args) 1)
+      (let ((arg (car args)))
+        (if (stringp arg)
+            (format "\"%s\"" arg)
+          (format "%S" arg))))
+     (t (format "%d args: %S" (length args) args)))))
 (defvar htprofile-company-log-col-format-list
   (list
    (htptable-make-col-format
@@ -182,7 +193,7 @@
     :data-formatter (lambda (data) (format "%s" (car (htprofile-company-data-args data)))))
    (htptable-make-col-format
     :header "args" :width nil
-    :data-formatter (lambda (data) (format "%s" (cdr (htprofile-company-data-args data)))))))
+    :data-formatter 'htprofile-company-format-args-from-data)))
 
 
 (defvar htprofile-company-log-variable-list
