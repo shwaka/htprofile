@@ -220,6 +220,7 @@
                  :row-data-list (htprofile-company-get-data-list
                                  nil nil 'htprofile-company-default-filter-function))))
     (htpviewer-update-viewer viewer table)
+    (goto-char (point-min))
     ;; (htpviewer-show-viewer viewer)
     viewer))
 
