@@ -41,23 +41,23 @@
 ;;     (my-message "%S" (list args (float-time elapsed-time)))))
 ;; (advice-add 'company-call-backend :around 'htprofile-advice:company-call-backend)
 
-(defvar htprofile-company--advice-list ()
+(defvar htprofile-company--backend-advice-list ()
   "list of advice functions")
-(defvar htprofile-company-data-list ()
+(defvar htprofile-company-backend-data-list ()
   "save data to this variable")
-(defvar htprofile-company-data-filter-function 'htprofile-company-get-data-list)
-(defvar htprofile-company-min-elapsed-time 0
-  "Time (millisecond) used in `htprofile-company-default-filter-function'.")
+(defvar htprofile-company-backend-data-filter-function 'htprofile-company-default-backend-data-filter)
+(defvar htprofile-company-backend-min-elapsed-time 0
+  "Time (millisecond) used in `htprofile-company-default-backend-data-filter'.")
 (defvar htprofile-company-backend-name-regexp
   "."
-  "Regular expression used in `htprofile-company-default-filter-function'.")
-(defun htprofile-company-get-data-list (&optional beg end filter)
-  (htprofile--filter-list htprofile-company-data-list
+  "Regular expression used in `htprofile-company-default-backend-data-filter'.")
+(defun htprofile-company-get-backend-data-list (&optional beg end filter)
+  (htprofile--filter-list htprofile-company-backend-data-list
                           beg end filter))
-(defun htprofile-company-default-filter-function (data)
+(defun htprofile-company-default-backend-data-filter (data)
   (and (let* ((time (htprofile-company-data-elapsed-time data))
               (time-float (float-time time)))
-         (>= (* 1000 time-float) htprofile-company-min-elapsed-time))
+         (>= (* 1000 time-float) htprofile-company-backend-min-elapsed-time))
        (let* ((backend-name-symbol (htprofile-company-data-backend-name data))
               (backend-name (symbol-name backend-name-symbol)))
          (string-match-p htprofile-company-backend-name-regexp
@@ -83,7 +83,7 @@
                "advice added in order to profile"
                (htprofile-company--run-backend-with-profile orig-func command-args (quote ,backend))))
       (advice-add backend :around advice-name)
-      (add-to-list 'htprofile-company--advice-list (cons backend advice-name)))))
+      (add-to-list 'htprofile-company--backend-advice-list (cons backend advice-name)))))
 (defun htprofile-company--run-backend-with-profile (backend command-args backend-name)
   "htprofile-profile-func を参考"
   (let* ((start-time (current-time))
@@ -96,7 +96,7 @@
       ;; when async
       (setq async 'start)
       (setq result (cons :async
-                         (htprofile-company--advise-fetcher (cdr result)
+                         (htprofile-company--advise-async-fetcher (cdr result)
                                                             backend-name
                                                             command-args
                                                             start-time))))
@@ -106,23 +106,23 @@
                                        :command-args command-args
                                        :elapsed-time elapsed-time
                                        :async async)
-          htprofile-company-data-list)
+          htprofile-company-backend-data-list)
     result))
-(defun htprofile-company--advise-fetcher (fetcher backend-name command-args start-time)
+(defun htprofile-company--advise-async-fetcher (fetcher backend-name command-args start-time)
   (lambda (callback)
-    (let ((callback-with-hook (htprofile-company--advise-callback callback
+    (let ((callback-with-hook (htprofile-company--advise-async-callback callback
                                                                   backend-name
                                                                   command-args
                                                                   start-time)))
       (funcall fetcher callback-with-hook))))
-(defun htprofile-company--advise-callback (callback backend-name command-args start-time)
+(defun htprofile-company--advise-async-callback (callback backend-name command-args start-time)
   (lambda (return-value)
     (push (htprofile-company-make-data :backend-name backend-name
                                        :command-args command-args
                                        :elapsed-time (time-subtract (current-time)
                                                                     start-time)
                                        :async 'end)
-          htprofile-company-data-list)
+          htprofile-company-backend-data-list)
     (funcall callback return-value)))
 
 ;;; struct
@@ -205,20 +205,20 @@
 
 
 (defvar htprofile-company-log-variable-list
-  '((:symbol htprofile-company-min-elapsed-time :type integer :description "minimum elapsed time")
+  '((:symbol htprofile-company-backend-min-elapsed-time :type integer :description "minimum elapsed time")
     (:symbol htprofile-company-abbrev-backend-name :type symbol :description "abbreviate backend name" :candidates (t nil))
     (:symbol htprofile-company-backend-name-regexp :type string :description "backend name regexp")))
 
 (defun htprofile-company-update-log ()
-  (let* ((message (format "%s logs" (length (htprofile-company-get-data-list))))
+  (let* ((message (format "%s logs" (length (htprofile-company-get-backend-data-list))))
          (viewer (htpviewer-make-viewer :buffer-name htprofile-company-log-buffer
                                         :variable-list htprofile-company-log-variable-list
                                         :update-func 'htprofile-company-update-log
                                         :message message))
          (table (htptable-make-table
                  :col-format-list htprofile-company-log-col-format-list
-                 :row-data-list (htprofile-company-get-data-list
-                                 nil nil 'htprofile-company-default-filter-function))))
+                 :row-data-list (htprofile-company-get-backend-data-list
+                                 nil nil htprofile-company-backend-data-filter-function))))
     (htpviewer-update-viewer viewer table)
     (goto-char (point-min))
     ;; (htpviewer-show-viewer viewer)
