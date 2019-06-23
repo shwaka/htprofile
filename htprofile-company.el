@@ -147,8 +147,8 @@
                                            :async async)))
 
 ;;; user interface
-(defvar htprofile-company-log-buffer
-  "*htprofile-company-log*")
+(defvar htprofile-company-backend-log-buffer
+  "*htprofile-company-backend-log*")
 (defvar htprofile-company-abbrev-backend-name
   t
   "company-capf -> -capf")
@@ -159,7 +159,7 @@
     (if htprofile-company-abbrev-backend-name
         (replace-regexp-in-string (rx bol "company-") "-" orig-str)
       orig-str)))
-(defun htprofile-company-format-args-from-data (data)
+(defun htprofile-company-format-args-from-backend-data (data)
   (let ((args (htprofile-company-backend-data-args data)))
     (cond
      ((null args) (propertize "<no args>"
@@ -170,12 +170,12 @@
             (format "\"%s\"" arg)
           (format "%S" arg))))
      (t (format "%d args: %S" (length args) args)))))
-(defun htprofile-company-format-async-from-data (data)
+(defun htprofile-company-format-async-from-backend-data (data)
   (let ((async (htprofile-company-backend-data-async data)))
     (if async
         (format "%s" async)
       "")))
-(defvar htprofile-company-log-col-format-list
+(defvar htprofile-company-backend-log-col-format-list
   (list
    (htptable-make-col-format
     :header "id" :width 'max :align 'right
@@ -195,28 +195,28 @@
                                     (float-time (htprofile-company-backend-data-elapsed-time data))))))
    (htptable-make-col-format
     :header "async" :width 5 :align 'left
-    :data-formatter 'htprofile-company-format-async-from-data)
+    :data-formatter 'htprofile-company-format-async-from-backend-data)
    (htptable-make-col-format
     :header "command" :width 'max
     :data-formatter (lambda (data) (format "%s" (htprofile-company-backend-data-command data))))
    (htptable-make-col-format
     :header "args" :width nil
-    :data-formatter 'htprofile-company-format-args-from-data)))
+    :data-formatter 'htprofile-company-format-args-from-backend-data)))
 
 
-(defvar htprofile-company-log-variable-list
+(defvar htprofile-company-backend-log-variable-list
   '((:symbol htprofile-company-backend-min-elapsed-time :type integer :description "minimum elapsed time")
     (:symbol htprofile-company-abbrev-backend-name :type symbol :description "abbreviate backend name" :candidates (t nil))
     (:symbol htprofile-company-backend-name-regexp :type string :description "backend name regexp")))
 
-(defun htprofile-company-update-log ()
+(defun htprofile-company-update-backend-log ()
   (let* ((message (format "%s logs" (length (htprofile-company-get-backend-data-list))))
-         (viewer (htpviewer-make-viewer :buffer-name htprofile-company-log-buffer
-                                        :variable-list htprofile-company-log-variable-list
-                                        :update-func 'htprofile-company-update-log
+         (viewer (htpviewer-make-viewer :buffer-name htprofile-company-backend-log-buffer
+                                        :variable-list htprofile-company-backend-log-variable-list
+                                        :update-func 'htprofile-company-update-backend-log
                                         :message message))
          (table (htptable-make-table
-                 :col-format-list htprofile-company-log-col-format-list
+                 :col-format-list htprofile-company-backend-log-col-format-list
                  :row-data-list (htprofile-company-get-backend-data-list
                                  nil nil htprofile-company-backend-data-filter-function))))
     (htpviewer-update-viewer viewer table)
@@ -224,9 +224,9 @@
     ;; (htpviewer-show-viewer viewer)
     viewer))
 
-(defun htprofile-company-show-log ()
+(defun htprofile-company-show-backend-log ()
   (interactive)
-  (let ((viewer (htprofile-company-update-log)))
+  (let ((viewer (htprofile-company-update-backend-log)))
     (htpviewer-show-viewer viewer)))
 
 (provide 'htprofile-company)
