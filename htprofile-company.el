@@ -55,10 +55,10 @@
   (htprofile--filter-list htprofile-company-backend-data-list
                           beg end filter))
 (defun htprofile-company-default-backend-data-filter (data)
-  (and (let* ((time (htprofile-company-data-elapsed-time data))
+  (and (let* ((time (htprofile-company-backend-data-elapsed-time data))
               (time-float (float-time time)))
          (>= (* 1000 time-float) htprofile-company-backend-min-elapsed-time))
-       (let* ((backend-name-symbol (htprofile-company-data-backend-name data))
+       (let* ((backend-name-symbol (htprofile-company-backend-data-backend-name data))
               (backend-name (symbol-name backend-name-symbol)))
          (string-match-p htprofile-company-backend-name-regexp
                          backend-name))))
@@ -102,7 +102,7 @@
                                                             start-time))))
     ;; (setq end-time (current-time)
     ;;       elapsed-time (time-subtract end-time start-time))
-    (push (htprofile-company-make-data :backend-name backend-name
+    (push (htprofile-company-make-backend-data :backend-name backend-name
                                        :command-args command-args
                                        :elapsed-time elapsed-time
                                        :async async)
@@ -117,7 +117,7 @@
       (funcall fetcher callback-with-hook))))
 (defun htprofile-company--advise-async-callback (callback backend-name command-args start-time)
   (lambda (return-value)
-    (push (htprofile-company-make-data :backend-name backend-name
+    (push (htprofile-company-make-backend-data :backend-name backend-name
                                        :command-args command-args
                                        :elapsed-time (time-subtract (current-time)
                                                                     start-time)
@@ -127,10 +127,10 @@
 
 ;;; struct
 (defvar htprofile-company--data-id -1)
-(cl-defstruct (htprofile-company-data (:constructor htprofile-company-make-data--internal))
+(cl-defstruct (htprofile-company-backend-data (:constructor htprofile-company-make-backend-data--internal))
   "data for each call of company backend"
   backend-name command args elapsed-time id current-time async)
-(cl-defun htprofile-company-make-data (&key backend-name command-args elapsed-time async)
+(cl-defun htprofile-company-make-backend-data (&key backend-name command-args elapsed-time async)
   (cl-check-type backend-name symbol) ;; (assert (symbolp backend-name))
   (cl-check-type elapsed-time list)  ;; (assert (listp elapsed-time))
   ;; (cl-check-type args list)
@@ -138,7 +138,7 @@
   (setq htprofile-company--data-id (1+ htprofile-company--data-id))
   (let ((command (car command-args))
         (args (cdr command-args)))
-    (htprofile-company-make-data--internal :backend-name backend-name
+    (htprofile-company-make-backend-data--internal :backend-name backend-name
                                            :command command
                                            :args args
                                            :elapsed-time elapsed-time
@@ -154,13 +154,13 @@
   "company-capf -> -capf")
 (defun htprofile-company-get-backend-name (data)
   "return the name of backend as a string (possibly abbreviate)"
-  (let* ((orig-symbol (htprofile-company-data-backend-name data))
+  (let* ((orig-symbol (htprofile-company-backend-data-backend-name data))
          (orig-str (symbol-name orig-symbol)))
     (if htprofile-company-abbrev-backend-name
         (replace-regexp-in-string (rx bol "company-") "-" orig-str)
       orig-str)))
 (defun htprofile-company-format-args-from-data (data)
-  (let ((args (htprofile-company-data-args data)))
+  (let ((args (htprofile-company-backend-data-args data)))
     (cond
      ((null args) (propertize "<no args>"
                               'face 'font-lock-comment-face))
@@ -171,7 +171,7 @@
           (format "%S" arg))))
      (t (format "%d args: %S" (length args) args)))))
 (defun htprofile-company-format-async-from-data (data)
-  (let ((async (htprofile-company-data-async data)))
+  (let ((async (htprofile-company-backend-data-async data)))
     (if async
         (format "%s" async)
       "")))
@@ -179,12 +179,12 @@
   (list
    (htptable-make-col-format
     :header "id" :width 'max :align 'right
-    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-id data))))
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-backend-data-id data))))
    (htptable-make-col-format
     :header "current" :width 9 :align 'left
     :data-formatter (lambda (data) (format-time-string
                                     "%H:%M:%S"
-                                    (htprofile-company-data-current-time data))))
+                                    (htprofile-company-backend-data-current-time data))))
    (htptable-make-col-format
     :header "backend" :width 'max :align 'left
     :data-formatter 'htprofile-company-get-backend-name)
@@ -192,13 +192,13 @@
     :header "elapse" :width 6 :align 'left
     :data-formatter (lambda (data)
                       (format "%s" (htprofile-float-to-str
-                                    (float-time (htprofile-company-data-elapsed-time data))))))
+                                    (float-time (htprofile-company-backend-data-elapsed-time data))))))
    (htptable-make-col-format
     :header "async" :width 5 :align 'left
     :data-formatter 'htprofile-company-format-async-from-data)
    (htptable-make-col-format
     :header "command" :width 'max
-    :data-formatter (lambda (data) (format "%s" (htprofile-company-data-command data))))
+    :data-formatter (lambda (data) (format "%s" (htprofile-company-backend-data-command data))))
    (htptable-make-col-format
     :header "args" :width nil
     :data-formatter 'htprofile-company-format-args-from-data)))
